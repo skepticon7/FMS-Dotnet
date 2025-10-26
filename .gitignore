@@ -1,0 +1,14 @@
+# Frontend
+node_modules/
+dist/
+
+# Backend
+bin/
+obj/
+*.user
+*.suo
+
+# General
+.env
+.vscode/
+.idea/
