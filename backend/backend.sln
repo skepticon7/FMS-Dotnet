@@ -13,6 +13,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserService.Domain", "UserService\src\UserService.Domain\UserService.Domain.csproj", "{D380AF1A-9FB6-4C6B-8159-B2D26D4A6894}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FileService", "FileService", "{58CD2AE7-55A0-A62A-B483-3AE10EDAF21D}"
+	ProjectSection(SolutionItems) = preProject
+		FileService\docker-compose.yml = FileService\docker-compose.yml
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{130E31C5-12C1-9B59-0344-6B0501FCA984}"
 EndProject

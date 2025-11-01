@@ -1,0 +1,6 @@
+services:
+  consul:
+    image: hashicorp/consul
+    container_name: FMS.Consul
+    ports:
+      - "8500:8500"
