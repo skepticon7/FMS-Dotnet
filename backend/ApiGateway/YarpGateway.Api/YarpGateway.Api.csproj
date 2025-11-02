@@ -9,15 +9,11 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.10" />
-    <PackageReference Include="Steeltoe.Discovery.Consul" Version="4.0.0" />
+    <PackageReference Include="Yarp.ReverseProxy" Version="2.3.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\UserService.Application\UserService.Application.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="..\..\..\.dockerignore">
+    <Content Include="..\..\.dockerignore">
       <Link>.dockerignore</Link>
     </Content>
   </ItemGroup>
