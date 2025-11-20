@@ -2,6 +2,10 @@ networks:
   proxybackend:
     driver: bridge
 
+volumes:
+  consul-data:
+    driver: local
+
 services:
   consul:
     image: hashicorp/consul
@@ -10,25 +14,47 @@ services:
       - "8500:8500"
     networks:
       - proxybackend
-
-  
-  yarp.gateway:
+    volumes:
+        - consul-data:/consul/data  
+    command: "agent -server -bootstrap -ui -client=0.0.0.0"
+    
+    
+    
+    
+    #  
+#  yarp.gateway:
+#    build:
+#      context: .
+#      dockerfile: backend/ApiGateway/YarpGateway.Api/Dockerfile
+#    container_name: YARP.Gateway
+#    ports:
+#      - "5000:8080"
+#      - "5001:8081"
+#    networks:
+#      - proxybackend
+    
+  ocelot.gateway:
     build:
       context: .
-      dockerfile: backend/ApiGateway/YarpGateway.Api/Dockerfile
-    container_name: YARP.Gateway
+      dockerfile: /backend/OcelotGateway/OcelotGateway.Api/Dockerfile
+    container_name: OCELOT.Gateway
     ports:
-      - "5000:8080"
-      - "5001:8081"
+      - "5050:8080"
+      - "5051:8081"
     networks:
       - proxybackend
+    depends_on:
+      - consul
     
-  users.api:
-    build:
-        context: .
-        dockerfile: backend/UserService/src/UserService.Api/Dockerfile
-    container_name: Users.Api
-    ports:
-      - "5034:8080"
-    networks:
-      - proxybackend
+#  users.api:
+#    build:
+#        context: .
+#        dockerfile: backend/UserService/Dockerfile
+#    container_name: user-service
+#    hostname: user-service
+#    ports:
+#      - "5034:8080"
+#    networks:
+#      - proxybackend
+#    depends_on:
+#      - consul

@@ -1,18 +1,33 @@
+using Microsoft.EntityFrameworkCore;
 using Steeltoe.Discovery.Consul;
-using UserService.Domain.Common;
+using Steeltoe.Discovery.Consul.Configuration;
+using UserService.Infrastructure.Persistence;
+using Winton.Extensions.Configuration.Consul;
+using Winton.Extensions.Configuration.Consul.Parsers;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
 
+builder.Configuration.AddConsul("config/userservice", options =>
+{
+    options.ConsulConfigurationOptions = c => c.Address = new Uri("http://localhost:8500");
+    options.Optional = false;
+    options.ReloadOnChange = true;
+});
+
+
+
+var connectionString = builder.Configuration["DefaultConnection"];
+Console.WriteLine($"Using {connectionString}");
+
+builder.Services.AddDbContext<UserDbContext>(options =>
+    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
 builder.Services.AddConsulDiscoveryClient();
 
 var app = builder.Build();
 
-
-
-
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -27,7 +42,7 @@ var summaries = new[]
 
 app.MapGet("/weatherforecast", () =>
     {
-        var forecast =  Enumerable.Range(1, 5).Select(index =>
+        var forecast = Enumerable.Range(1, 5).Select(index =>
                 new WeatherForecast
                 (
                     DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
@@ -45,4 +60,3 @@ record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
 {
     public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
 }
-
