@@ -1,6 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UserService", "UserService", "{C0127DB6-3CA8-EE98-7726-A4993E48C5D4}"
+	ProjectSection(SolutionItems) = preProject
+		UserService\Dockerfile = UserService\Dockerfile
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{DDC2FC8E-3CB4-FABF-DBC9-050D9D5721E2}"
 EndProject
@@ -35,6 +38,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		compose.yaml = compose.yaml
 	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OcelotGateway", "OcelotGateway", "{99817C20-B656-CED1-CF73-156B68D00F64}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OcelotGateway.Api", "OcelotGateway\OcelotGateway.Api\OcelotGateway.Api.csproj", "{5C1C9EBC-8237-4C53-9AB5-B4380CE9945D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -154,6 +161,18 @@ Global
 		{D470EDDC-20AD-412A-BFA5-4977A43E8B5A}.Release|x64.Build.0 = Release|Any CPU
 		{D470EDDC-20AD-412A-BFA5-4977A43E8B5A}.Release|x86.ActiveCfg = Release|Any CPU
 		{D470EDDC-20AD-412A-BFA5-4977A43E8B5A}.Release|x86.Build.0 = Release|Any CPU
+		{5C1C9EBC-8237-4C53-9AB5-B4380CE9945D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C1C9EBC-8237-4C53-9AB5-B4380CE9945D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C1C9EBC-8237-4C53-9AB5-B4380CE9945D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5C1C9EBC-8237-4C53-9AB5-B4380CE9945D}.Debug|x64.Build.0 = Debug|Any CPU
+		{5C1C9EBC-8237-4C53-9AB5-B4380CE9945D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5C1C9EBC-8237-4C53-9AB5-B4380CE9945D}.Debug|x86.Build.0 = Debug|Any CPU
+		{5C1C9EBC-8237-4C53-9AB5-B4380CE9945D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C1C9EBC-8237-4C53-9AB5-B4380CE9945D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5C1C9EBC-8237-4C53-9AB5-B4380CE9945D}.Release|x64.ActiveCfg = Release|Any CPU
+		{5C1C9EBC-8237-4C53-9AB5-B4380CE9945D}.Release|x64.Build.0 = Release|Any CPU
+		{5C1C9EBC-8237-4C53-9AB5-B4380CE9945D}.Release|x86.ActiveCfg = Release|Any CPU
+		{5C1C9EBC-8237-4C53-9AB5-B4380CE9945D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -170,5 +189,6 @@ Global
 		{9CCDFDC6-7E92-4B6A-BDFF-4BD5BA957072} = {130E31C5-12C1-9B59-0344-6B0501FCA984}
 		{DC834B45-1D33-4D58-8A6A-1E96BC3D034C} = {130E31C5-12C1-9B59-0344-6B0501FCA984}
 		{D470EDDC-20AD-412A-BFA5-4977A43E8B5A} = {25D181DD-5CC9-F0B3-C64F-91E1AA77FD70}
+		{5C1C9EBC-8237-4C53-9AB5-B4380CE9945D} = {99817C20-B656-CED1-CF73-156B68D00F64}
 	EndGlobalSection
 EndGlobal
