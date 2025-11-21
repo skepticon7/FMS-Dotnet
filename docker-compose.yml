@@ -18,20 +18,8 @@ services:
         - consul-data:/consul/data  
     command: "agent -server -bootstrap -ui -client=0.0.0.0"
     
-    
-    
-    
-    #  
-#  yarp.gateway:
-#    build:
-#      context: .
-#      dockerfile: backend/ApiGateway/YarpGateway.Api/Dockerfile
-#    container_name: YARP.Gateway
-#    ports:
-#      - "5000:8080"
-#      - "5001:8081"
-#    networks:
-#      - proxybackend
+   
+
     
   ocelot.gateway:
     build:
