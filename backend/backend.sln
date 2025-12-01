@@ -30,11 +30,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileService.Domain", "FileS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileService.Infrastructure", "FileService\src\FileService.Infrastructure\FileService.Infrastructure.csproj", "{DC834B45-1D33-4D58-8A6A-1E96BC3D034C}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B9D68C09-EA0B-4C38-B46E-5C0576D2F0B5}"
-	ProjectSection(SolutionItems) = preProject
-		compose.yaml = compose.yaml
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OcelotGateway", "OcelotGateway", "{99817C20-B656-CED1-CF73-156B68D00F64}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OcelotGateway.Api", "OcelotGateway\OcelotGateway.Api\OcelotGateway.Api.csproj", "{5C1C9EBC-8237-4C53-9AB5-B4380CE9945D}"

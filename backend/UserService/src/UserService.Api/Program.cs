@@ -1,6 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Steeltoe.Discovery.Consul;
 using Steeltoe.Discovery.Consul.Configuration;
+using UserService.Api;
+using UserService.Application;
+using UserService.Infrastructure;
 using UserService.Infrastructure.Persistence;
 using Winton.Extensions.Configuration.Consul;
 using Winton.Extensions.Configuration.Consul.Parsers;
@@ -8,6 +11,10 @@ using Winton.Extensions.Configuration.Consul.Parsers;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
+
+builder.Services.AddInfrastructure();
+builder.Services.AddPresentation();
+builder.Services.AddApplication();
 
 builder.Configuration.AddConsul("config/userservice", options =>
 {
