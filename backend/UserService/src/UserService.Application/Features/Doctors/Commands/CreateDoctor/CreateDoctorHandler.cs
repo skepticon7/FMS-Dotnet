@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using MediatR;
+using UserService.Application.Common.Exceptions;
 using UserService.Application.Common.Security;
 using UserService.Application.DTOs;
 using UserService.Application.Interfaces;
@@ -23,6 +24,11 @@ public class CreateDoctorHandler : IRequestHandler<CreateDoctorCommand , DoctorD
 
     public async Task<DoctorDTO> Handle(CreateDoctorCommand request, CancellationToken cancellationToken)
     {
+
+        var doctorCheck = _doctorService.GetDoctorByEmailAsync(request.Email);
+        if(doctorCheck != null)
+            throw new AlreadyExistsException("Doctor with this email already exists.");
+        
         var doctor = new Doctor
         {
             FirstName = request.FirstName,
