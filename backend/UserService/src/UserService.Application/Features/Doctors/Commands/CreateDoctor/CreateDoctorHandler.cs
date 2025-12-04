@@ -13,19 +13,19 @@ namespace UserService.Application.Features.Users.Commands;
 public class CreateDoctorHandler : IRequestHandler<CreateDoctorCommand , DoctorDTO>
 {
 
-    private readonly IDoctorService _doctorService;
+    private readonly IDoctorRepository _doctorRepository;
     private readonly  IPasswordHasher _hasher;
 
-    private CreateDoctorHandler(IDoctorService doctorService , IPasswordHasher hasher)
+    public CreateDoctorHandler(IDoctorRepository doctorRepository , IPasswordHasher hasher)
     {
-        _doctorService = doctorService;
+        _doctorRepository = doctorRepository;
         _hasher = hasher;
     }
 
     public async Task<DoctorDTO> Handle(CreateDoctorCommand request, CancellationToken cancellationToken)
     {
 
-        var doctorCheck = _doctorService.GetDoctorByEmailAsync(request.Email);
+        var doctorCheck = await _doctorRepository.GetDoctorByEmailAsync(request.Email);
         if(doctorCheck != null)
             throw new AlreadyExistsException("Doctor with this email already exists.");
         
@@ -42,7 +42,7 @@ public class CreateDoctorHandler : IRequestHandler<CreateDoctorCommand , DoctorD
             Password = _hasher.Hash(request.Password)
         };
 
-        var createdDoctor = await _doctorService.CreateDoctorAsync(doctor);
+        var createdDoctor = await _doctorRepository.CreateDoctorAsync(doctor);
 
         return new DoctorDTO
         {

@@ -15,8 +15,14 @@ services:
     networks:
       - proxybackend
     volumes:
-        - consul-data:/consul/data  
-    command: "agent -server -bootstrap -ui -client=0.0.0.0"
+      - consul-data:/consul/data
+    command: >
+      agent 
+      -server 
+      -bootstrap 
+      -ui 
+      -client=0.0.0.0 
+      -hcl='server_rejoin_age_max = "8760h"'
     
    
 

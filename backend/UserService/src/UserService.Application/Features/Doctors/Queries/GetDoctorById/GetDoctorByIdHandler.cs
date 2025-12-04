@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using UserService.Application.Common.Exceptions;
 using UserService.Application.DTOs;
 using UserService.Application.Features.Doctors.Queries.GetDoctorById;
 using UserService.Application.Interfaces;
@@ -8,14 +9,15 @@ namespace UserService.Application.Features.Users.Queries.GetUserById;
 public class GetDoctorByIdHandler : IRequestHandler<GetDoctorByIdQuery , DoctorDTO?>
 {
     
-    public readonly IDoctorService _doctorService;
+    public readonly IDoctorRepository _DoctorRepository;
 
-    public GetDoctorByIdHandler(IDoctorService doctorService) => _doctorService = doctorService;
+    public GetDoctorByIdHandler(IDoctorRepository doctorRepository) => _DoctorRepository = doctorRepository;
     
     public async Task<DoctorDTO?> Handle(GetDoctorByIdQuery request, CancellationToken cancellationToken)
     {
-        var user = await _doctorService.GetDoctorByIdAsync(request.Id);
-        if (user == null) return null;
+        var user = await _DoctorRepository.GetDoctorByIdAsync(request.Id);
+        if (user == null) 
+            throw new NotFoundException($"Doctor width id : {request.Id} not found.");
 
         return new DoctorDTO
         {

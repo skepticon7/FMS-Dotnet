@@ -9,13 +9,13 @@ namespace UserService.Application.Features.Doctors.Queries.GetDoctorByEmail;
 public class GetDoctorByEmailHandler : IRequestHandler<GetDoctorByEmailQuery , DoctorDTO?>
 {
 
-    public readonly IDoctorService _doctorService;
+    public readonly IDoctorRepository _DoctorRepository;
 
-    public GetDoctorByEmailHandler(IDoctorService doctorService) => _doctorService = doctorService;
+    public GetDoctorByEmailHandler(IDoctorRepository doctorRepository) => _DoctorRepository = doctorRepository;
     
     public async Task<DoctorDTO?> Handle(GetDoctorByEmailQuery request, CancellationToken cancellationToken)
     {
-        var user = await _doctorService.GetDoctorByEmailAsync(request.Email);
+        var user = await _DoctorRepository.GetDoctorByEmailAsync(request.Email);
         if (user == null) return null;
         return new DoctorDTO
         {

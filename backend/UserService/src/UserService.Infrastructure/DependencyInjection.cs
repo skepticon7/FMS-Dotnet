@@ -11,7 +11,7 @@ public static class DependencyInjection
     public static IServiceCollection AddInfrastructure(this IServiceCollection services)
     {
         services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
-        services.AddScoped<IDoctorService, DoctorRepository>();
+        services.AddScoped<IDoctorRepository, DoctorRepository>();
         return services;
     }
 }
