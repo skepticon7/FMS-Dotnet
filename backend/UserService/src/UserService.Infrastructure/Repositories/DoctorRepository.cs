@@ -5,7 +5,7 @@ using UserService.Infrastructure.Persistence;
 
 namespace UserService.Infrastructure.Repositories;
 
-public class DoctorRepository : IDoctorService
+public class DoctorRepository : IDoctorRepository
 {
     
     public readonly UserDbContext _context;
@@ -14,8 +14,8 @@ public class DoctorRepository : IDoctorService
     
     public async Task<Doctor> CreateDoctorAsync(Doctor doctor)
     {
-        _context.Users.Add(doctor);
-        await _context.AddRangeAsync();
+        _context.Doctors.Add(doctor);
+        await _context.SaveChangesAsync();
         return doctor;
     }
 

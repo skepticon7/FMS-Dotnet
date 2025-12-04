@@ -2,7 +2,7 @@
 
 namespace UserService.Application.Interfaces;
 
-public interface IDoctorService
+public interface IDoctorRepository
 {
     Task<Doctor> CreateDoctorAsync(Doctor doctor);
     Task<Doctor?> GetDoctorByIdAsync(long id);

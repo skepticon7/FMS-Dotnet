@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Steeltoe.Discovery.Consul;
 using Steeltoe.Discovery.Consul.Configuration;
 using UserService.Api;
+using UserService.Api.Middleware;
 using UserService.Application;
 using UserService.Infrastructure;
 using UserService.Infrastructure.Persistence;
@@ -35,12 +36,16 @@ builder.Services.AddConsulDiscoveryClient();
 
 var app = builder.Build();
 
+app.UseMiddleware<ExceptionMiddleware>();
+
+app.MapControllers();
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection();
 
 var summaries = new[]
 {
