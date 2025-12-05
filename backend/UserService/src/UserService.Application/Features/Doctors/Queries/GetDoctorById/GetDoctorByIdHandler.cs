@@ -26,6 +26,7 @@ public class GetDoctorByIdHandler : IRequestHandler<GetDoctorByIdQuery , DoctorD
             LastName = user.LastName,
             Email = user.Email,
             PhoneNumber = user.PhoneNumber,
+            Gender = user.Gender.ToString(),
             Specialty = user.Speciality.ToString(),
             LicenseNo = user.LicenseNo,
             createdAt = user.CreatedAt,
