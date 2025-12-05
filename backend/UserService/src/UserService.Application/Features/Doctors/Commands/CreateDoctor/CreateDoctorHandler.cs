@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using FluentValidation;
 using MediatR;
 using UserService.Application.Common.Exceptions;
 using UserService.Application.Common.Security;
@@ -15,16 +16,27 @@ public class CreateDoctorHandler : IRequestHandler<CreateDoctorCommand , DoctorD
 
     private readonly IDoctorRepository _doctorRepository;
     private readonly  IPasswordHasher _hasher;
+    private readonly IValidator<CreateDoctorCommand> _validator;
 
-    public CreateDoctorHandler(IDoctorRepository doctorRepository , IPasswordHasher hasher)
+    public CreateDoctorHandler(IDoctorRepository doctorRepository , IPasswordHasher hasher , IValidator<CreateDoctorCommand> validator)
     {
         _doctorRepository = doctorRepository;
+        _validator = validator;
         _hasher = hasher;
     }
 
     public async Task<DoctorDTO> Handle(CreateDoctorCommand request, CancellationToken cancellationToken)
     {
 
+        var validationResult = await _validator.ValidateAsync(
+            request, 
+            opt => opt.IncludeRuleSets("Create")
+            );
+        
+        if(!validationResult.IsValid)
+            throw new ValidationException(validationResult.Errors);
+        
+        
         var doctorCheck = await _doctorRepository.GetDoctorByEmailAsync(request.Email);
         if(doctorCheck != null)
             throw new AlreadyExistsException("Doctor with this email already exists.");
