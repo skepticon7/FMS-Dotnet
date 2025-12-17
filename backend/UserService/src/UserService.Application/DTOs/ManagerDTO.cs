@@ -1,6 +1,8 @@
-﻿namespace UserService.Application.DTOs;
+﻿using MediatR;
 
-public class ManagerDTO : UserDTO
+namespace UserService.Application.DTOs;
+
+public class ManagerDTO : UserDTO, IRequest
 {
     public string OfficeNo { get; set; } = default!;
 }

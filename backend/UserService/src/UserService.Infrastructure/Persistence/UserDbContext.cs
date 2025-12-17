@@ -59,14 +59,9 @@ public class UserDbContext : DbContext
                 .IsRequired()
                 .HasMaxLength(255);
 
-            // MySQL-compatible timestamps
-            entity.Property(u => u.CreatedAt)
-                .HasColumnType("datetime")
-                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(u => u.CreatedAt).ValueGeneratedOnAdd();
+            entity.Property(u => u.UpdatedAt).ValueGeneratedOnAddOrUpdate();
 
-            entity.Property(u => u.UpdatedAt)
-                .HasColumnType("datetime")
-                .HasDefaultValueSql("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
         });
 
         modelBuilder.Entity<Doctor>(entity =>

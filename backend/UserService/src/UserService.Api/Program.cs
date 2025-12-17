@@ -13,21 +13,28 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
 
-builder.Services.AddInfrastructure();
-builder.Services.AddPresentation();
-builder.Services.AddApplication();
 
-builder.Configuration.AddConsul("config/userservice", options =>
+
+builder.Configuration.AddConsul("config/connections", options =>
 {
     options.ConsulConfigurationOptions = c => c.Address = new Uri("http://localhost:8500");
     options.Optional = false;
     options.ReloadOnChange = true;
 });
 
+builder.Configuration.AddConsul("config/jwt", options =>
+{
+    options.ConsulConfigurationOptions = c => c.Address = new Uri("http://localhost:8500");
+    options.Optional = false;
+    options.ReloadOnChange = true;
+});
+
+builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddPresentation(builder.Configuration);
+builder.Services.AddApplication();
 
 
-var connectionString = builder.Configuration["DefaultConnection"];
-Console.WriteLine($"Using {connectionString}");
+var connectionString = builder.Configuration["DefaultConnections:user-service-db"];
 
 builder.Services.AddDbContext<UserDbContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
@@ -38,6 +45,9 @@ var app = builder.Build();
 
 app.UseMiddleware<ExceptionMiddleware>();
 
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapControllers();
 
 if (app.Environment.IsDevelopment())
@@ -45,30 +55,6 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-// app.UseHttpsRedirection();
-
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-    {
-        var forecast = Enumerable.Range(1, 5).Select(index =>
-                new WeatherForecast
-                (
-                    DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                    Random.Shared.Next(-20, 55),
-                    summaries[Random.Shared.Next(summaries.Length)]
-                ))
-            .ToArray();
-        return forecast;
-    })
-    .WithName("GetWeatherForecast");
-
 app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+// app.UseHttpsRedirection();
