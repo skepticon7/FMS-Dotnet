@@ -1,9 +1,17 @@
 ﻿using System.Diagnostics;
+using AutoMapper;
 using FluentValidation;
 using MediatR;
+using Microsoft.Extensions.Caching.Distributed;
+using Newtonsoft.Json;
+using StackExchange.Redis;
+using UserService.Application.Common.Abstractions;
+using UserService.Application.Common.Caching;
 using UserService.Application.Common.Exceptions;
 using UserService.Application.Common.Security;
 using UserService.Application.DTOs;
+using UserService.Application.Features.Doctors.Queries.GetDoctorById;
+using UserService.Application.Features.Doctors.Queries.GetDoctors;
 using UserService.Application.Interfaces;
 using UserService.Domain.Entities;
 using UserService.Domain.Enums;
@@ -11,24 +19,20 @@ using UserService.Domain.Enums;
 
 namespace UserService.Application.Features.Users.Commands;
 
-public class CreateDoctorHandler : IRequestHandler<CreateDoctorCommand , DoctorDTO>
+public class CreateDoctorHandler(
+    IDoctorRepository doctorRepository,
+    IValidator<CreateDoctorCommand> validator,
+    IMapper mapper,
+    IPasswordHasher hasher,
+    ICacheService _cacheService
+    )
+    : IRequestHandler<CreateDoctorCommand, DoctorDTO>
 {
-
-    private readonly IDoctorRepository _doctorRepository;
-    private readonly  IPasswordHasher _hasher;
-    private readonly IValidator<CreateDoctorCommand> _validator;
-
-    public CreateDoctorHandler(IDoctorRepository doctorRepository , IPasswordHasher hasher , IValidator<CreateDoctorCommand> validator)
-    {
-        _doctorRepository = doctorRepository;
-        _validator = validator;
-        _hasher = hasher;
-    }
 
     public async Task<DoctorDTO> Handle(CreateDoctorCommand request, CancellationToken cancellationToken)
     {
 
-        var validationResult = await _validator.ValidateAsync(
+        var validationResult = await validator.ValidateAsync(
             request, 
             opt => opt.IncludeRuleSets("Create")
             );
@@ -37,38 +41,18 @@ public class CreateDoctorHandler : IRequestHandler<CreateDoctorCommand , DoctorD
             throw new ValidationException(validationResult.Errors);
         
         
-        var doctorCheck = await _doctorRepository.GetDoctorByEmailAsync(request.Email);
+        var doctorCheck = await doctorRepository.GetDoctorByEmailAsync(request.Email);
         if(doctorCheck != null)
-            throw new AlreadyExistsException("Doctor with this email already exists.");
+            throw new AlreadyExistsException("Doctor already exists.");
+
+        var doctor = mapper.Map<Doctor>(request);
         
-        var doctor = new Doctor
-        {
-            FirstName = request.FirstName,
-            LastName = request.LastName,
-            Email = request.Email,
-            PhoneNumber = request.PhoneNumber,
-            Gender = Enum.Parse<Gender>(request.Gender, ignoreCase: true),
-            BirthDate = request.BirthDate,
-            Speciality = Enum.Parse<Speciality>(request.Speciality, ignoreCase: true),
-            LicenseNo = request.LicenseNo,
-            Password = _hasher.Hash(request.Password)
-        };
+        doctor.Password = hasher.Hash(request.Password);
 
-        var createdDoctor = await _doctorRepository.CreateDoctorAsync(doctor);
+        var createdDoctor = await doctorRepository.CreateDoctorAsync(doctor);
 
-        return new DoctorDTO
-        {
-            Id = createdDoctor.Id,
-            FirstName = createdDoctor.FirstName,
-            LastName = createdDoctor.LastName,
-            Email = createdDoctor.Email,
-            PhoneNumber = createdDoctor.PhoneNumber,
-            Gender = createdDoctor.Gender.ToString(),
-            BirthDate = createdDoctor.BirthDate,
-            Specialty = createdDoctor.Speciality.ToString(),
-            LicenseNo = createdDoctor.LicenseNo,
-            createdAt = createdDoctor.CreatedAt,
-            updatedAt = createdDoctor.UpdatedAt
-        };
+        await _cacheService.RemoveCacheByPrefix(nameof(GetDoctorsQuery), cancellationToken);
+
+        return mapper.Map<DoctorDTO>(createdDoctor);
     }
 }
