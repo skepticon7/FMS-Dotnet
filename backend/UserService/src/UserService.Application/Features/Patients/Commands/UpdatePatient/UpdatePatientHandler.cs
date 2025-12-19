@@ -5,9 +5,11 @@ using MediatR;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.VisualBasic;
 using Newtonsoft.Json;
+using UserService.Application.Common.Caching;
 using UserService.Application.Common.Exceptions;
 using UserService.Application.DTOs;
 using UserService.Application.Features.Patients.Queries.GetPatientById;
+using UserService.Application.Features.Patients.Queries.GetPatients;
 using UserService.Application.Interfaces;
 
 namespace UserService.Application.Features.Patients.Commands.UpdatePatient;
@@ -16,7 +18,8 @@ public class UpdatePatientHandler(
         IMapper _mapper,
         IPatientRepository _patientRepository,
         IValidator<UpdatePatientCommand> _validator,
-        IDistributedCache _cache
+        IDistributedCache _cache,
+        ICacheService _cacheService
 ) : IRequestHandler<UpdatePatientCommand , PatientDTO>
 {
 
@@ -43,6 +46,8 @@ public class UpdatePatientHandler(
 
         var cacheKey = $"{nameof(GetPatientByIdQuery)}:{JsonConvert.SerializeObject(new { updatedPatient.Id })}";
         await _cache.RemoveAsync(cacheKey, cancellationToken);
+        
+        await _cacheService.RemoveCacheByPrefix(nameof(GetPatientsQuery), cancellationToken);
 
         return _mapper.Map<PatientDTO>(updatedPatient);
 

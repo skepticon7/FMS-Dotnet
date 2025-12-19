@@ -1,11 +1,14 @@
-﻿using MassTransit;
+﻿using Contracts.Users;
+using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using UserService.Application.Common.Caching;
 using UserService.Application.Common.Security;
 using UserService.Application.Interfaces;
+using UserService.Application.Interfaces.Messaging;
 using UserService.Domain.Entities;
 using UserService.Infrastructure.Cache;
+using UserService.Infrastructure.Messaging.Clients;
 using UserService.Infrastructure.Repositories;
 using UserService.Infrastructure.Security;
 
@@ -21,6 +24,7 @@ public static class DependencyInjection
         services.AddScoped<IDoctorRepository, DoctorRepository>();
         services.AddScoped<IManagerRepository, ManagerRepository>();
         services.AddScoped<IPatientRepository, PatientRepository>();
+        services.AddScoped<IFileServiceClient, FileServiceClient>();
         services.AddScoped<ICacheService, CacheService>();
 
         services.AddMassTransit(busConfigurator =>
@@ -36,6 +40,9 @@ public static class DependencyInjection
                 });
                 configurator.ConfigureEndpoints(context);
             });
+            
+            busConfigurator.AddRequestClient<GetPatientIdsByDoctorIdRequest>();
+            
         });
         
         return services;

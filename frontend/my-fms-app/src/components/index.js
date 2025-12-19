@@ -17,6 +17,8 @@ import Exports from "@/components/Exports.jsx";
 import Doctors from "./Doctors.jsx";
 import Files from './Files.jsx';
 import AdvancedPatientsFilters from "./AdvancedPatientsFilters.jsx";
+import PatientDoctorViewUpdate from "./PatientDoctorViewUpdate.jsx";
+import ManagerViewUpdate from "./ManagerViewUpdate.jsx";
 export {
     Login ,
     MyModal,
@@ -36,5 +38,7 @@ export {
     Doctors,
     Patients,
     Dashboard,
-    AdvancedPatientsFilters
+    AdvancedPatientsFilters,
+    PatientDoctorViewUpdate,
+    ManagerViewUpdate
 };

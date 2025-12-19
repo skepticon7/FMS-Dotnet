@@ -56,7 +56,7 @@ public class UserDbContext : DbContext
                 .HasColumnType("date");
 
             entity.Property(u => u.Password)
-                .IsRequired()
+                .IsRequired(false)
                 .HasMaxLength(255);
 
             entity.Property(u => u.CreatedAt).ValueGeneratedOnAdd();

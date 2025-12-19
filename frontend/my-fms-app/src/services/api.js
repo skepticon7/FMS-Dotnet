@@ -33,6 +33,24 @@ export const saveSuperuser = async (newSuperuser) => {
     }
 }
 
+export const saveDoctor = async (values) => {
+    try {
+        const response = await axios.post(`${apiGateway}/user-service/api/doctor/createDoctor` , values , {...getAuthConfig()})
+        return response;
+    }catch (e){
+        throw e;
+    }
+}
+
+export const savePatient = async (values) => {
+    try {
+        const response = await axios.post(`${apiGateway}/user-service/api/patient/createPatient` , values , {...getAuthConfig()})
+        return response;
+    }catch (e){
+        throw e;
+    }
+}
+
 export const saveTechnican = async (newTechnician , createdById , role) => {
         newTechnician.createdBy = createdById;
         newTechnician.superUser = role === "SUPERUSER"
@@ -62,9 +80,9 @@ export const saveSupervisor = async (newSupervisor , createdById = null , role) 
     }
 }
 
-export const confirmPassword = async (password) => {
+export const confirmPassword = async (password , userId) => {
     try {
-        const response = await axios.post(`${backendServer}/api/auth/confirmPassword` , {password} , {...getAuthConfig()});
+        const response = await axios.post(`${apiGateway}/user-service/api/auth/confirmPassword` , {password , id : userId} , {...getAuthConfig()});
         console.log(response);
         return response;
     }catch (e) {
@@ -182,6 +200,39 @@ export const updateTechnician = async (technician , technicianId) => {
     }
 }
 
+
+export const updatePatientById = async (patientId , values) => {
+    try {
+        const response = await axios.patch(`${apiGateway}/user-service/api/patient/updatePatientById/${patientId}` , values , {...getAuthConfig()});
+        console.log(response);
+        return response;
+    }catch (e) {
+        throw e;
+    }
+}
+
+export const updateDoctorById = async (doctorId , values) => {
+    if(!values.password) delete technician.password;
+    try {
+        const response = await axios.patch(`${apiGateway}/user-service/api/doctor/updateDoctorById/${doctorId}` , values , {...getAuthConfig()});
+        console.log(response);
+        return response;
+    }catch (e) {
+        throw e;
+    }
+}
+
+export const updateManagerById = async (managerId , values) => {
+    if(!values.password) delete values.password;
+    try {
+        const response = await axios.patch(`${apiGateway}/user-service/api/manager/updateManagerById/${managerId}` , values , {...getAuthConfig()});
+        return response;
+    }catch (e) {
+        throw e;
+    }
+}
+
+
 // delete requests
 
 export const deleteInterventionType = async (interventionTypeId) => {
@@ -224,6 +275,45 @@ export const deleteSupervisor = async (supervisorId) => {
 export const deleteTechnician = async (technicianId) => {
     try {
         const response = await axios.delete(`${backendServer}/api/users/deleteTechnician/${technicianId}` , {...getAuthConfig()});
+    }catch (e) {
+        throw e;
+    }
+}
+
+
+// get requests
+
+export const getPatientsByDoctorId = async (doctorId) => {
+    try {
+        const response = await axios.get(`${apiGateway}/user-service/api/patients/getPatientsByDoctorId/${doctorId}`  ,  {...getAuthConfig()});
+        return response;
+    }catch (e) {
+        throw e;
+    }
+}
+
+export const getPatientById = async (patientId) => {
+    try {
+        const response = await axios.get(`${apiGateway}/user-service/api/patient/getPatientById/${patientId}`  ,  {...getAuthConfig()});
+        return response;
+    }catch (e) {
+        throw e;
+    }
+}
+
+export const getDoctorById = async (doctorId) => {
+    try {
+        const response = await axios.get(`${apiGateway}/user-service/api/doctor/getDoctorById/${doctorId}`  , {...getAuthConfig()});
+        return response;
+    }catch (e) {
+        throw e;
+    }
+}
+
+export const getManagerById = async (managerId) => {
+    try {
+        const response = await axios.get(`${apiGateway}/user-service/api/manager/getManagerById/${managerId}`  , {...getAuthConfig()});
+        return response;
     }catch (e) {
         throw e;
     }

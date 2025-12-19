@@ -74,6 +74,7 @@ public class PatientRepository(UserDbContext _context) : IPatientRepository
         var totalCount = await q.CountAsync(cancellationToken);
 
         var items = await q
+            .OrderByDescending(p => p.CreatedAt)
             .Skip((query.Page - 1) * 5)
             .Take(5)
             .ToListAsync(cancellationToken);

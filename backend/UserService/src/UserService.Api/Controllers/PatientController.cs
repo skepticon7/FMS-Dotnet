@@ -6,6 +6,7 @@ using UserService.Application.Features.Patients.Commands.DeleteUpdate;
 using UserService.Application.Features.Patients.Commands.UpdatePatient;
 using UserService.Application.Features.Patients.Queries.GetPatientById;
 using UserService.Application.Features.Patients.Queries.GetPatients;
+using UserService.Application.Features.Patients.Queries.GetPatientsByDoctorId;
 using UserService.Application.Features.Patients.Queries.GetPatientsStats;
 
 namespace UserService.Api.Controllers;
@@ -48,6 +49,28 @@ public class PatientController(IMediator _mediator) : ControllerBase
                 Genders = genders,
                 Name = name
             }));
+    }
+
+    [HttpGet("getPatientsByDoctorId/{id}")]
+    [Authorize(Policy = "DoctorOrManager")]
+    public async Task<IActionResult> GetPatientsByDoctorId(
+        long id,
+        [FromQuery] int page = 1,
+        [FromQuery] string name = null,
+        [FromQuery] List<string> bloodTypes = null,
+        [FromQuery] List<string> genders = null
+    )
+    {
+        return Ok(await _mediator.Send(
+            new GetPatientsByDoctorIdQuery
+            {
+                Id = id,
+                Page = page,
+                BloodTypes = bloodTypes,
+                Genders = genders,
+                Name = name
+            }
+        ));
     }
     
     [HttpGet("getPatientsStats")]

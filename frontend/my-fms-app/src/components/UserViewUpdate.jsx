@@ -183,7 +183,13 @@ const UserViewUpdate = ({isOpen , onClose , isEdit , viewOnly = false , technici
                                             setFormValues(values);
                                             setPasswordModalOpen(true);
                                         }else {
-                                            await saveTechnican(values , user?.id , role);
+                                            if(userRole === 'patient'){
+                                                await savePatient(values);
+                                            }else if(userRole === 'doctor'){
+                                                await saveDoctor(values);
+                                            }else {
+                                                throw new Error('invalid error');
+                                            }
                                             toast.success("updates saved successfully");
                                             onClose();
                                         }
