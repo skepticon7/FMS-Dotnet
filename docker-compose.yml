@@ -15,23 +15,17 @@ services:
     networks:
       - proxybackend
     volumes:
-        - consul-data:/consul/data  
-    command: "agent -server -bootstrap -ui -client=0.0.0.0"
+      - consul-data:/consul/data
+    command: >
+      agent 
+      -server 
+      -bootstrap 
+      -ui 
+      -client=0.0.0.0 
+      -hcl='server_rejoin_age_max = "8760h"'
     
-    
-    
-    
-    #  
-#  yarp.gateway:
-#    build:
-#      context: .
-#      dockerfile: backend/ApiGateway/YarpGateway.Api/Dockerfile
-#    container_name: YARP.Gateway
-#    ports:
-#      - "5000:8080"
-#      - "5001:8081"
-#    networks:
-#      - proxybackend
+   
+
     
   ocelot.gateway:
     build:
@@ -45,6 +39,40 @@ services:
       - proxybackend
     depends_on:
       - consul
+  
+        
+  redis:
+    image: "redis:7.0-alpine"
+    container_name: redis
+    ports:
+      - "6379:6379"
+    command: >
+      redis-server 
+      --appendonly no
+    depends_on:
+      - consul
+        
+  redis-insight:
+    image : redis/redisinsight:latest
+    container_name: redis-insight
+    ports:
+      - "5540:5540"
+    depends_on:
+      - redis
+      - consul
+        
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    depends_on:
+      - consul
+  
     
 #  users.api:
 #    build:

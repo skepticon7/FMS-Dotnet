@@ -8,6 +8,12 @@ public class UserDbContext : DbContext
     public UserDbContext(DbContextOptions<UserDbContext> options) : base(options) {}
 
     public DbSet<User> Users => Set<User>();
+    
+    public DbSet<Doctor> Doctors => Set<Doctor>();
+    
+    public DbSet<Patient> Patients => Set<Patient>();
+    
+    public DbSet<Manager> Managers => Set<Manager>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -15,13 +21,18 @@ public class UserDbContext : DbContext
         
         modelBuilder.Entity<User>(entity =>
         {
-            // Table name
-            entity.ToTable("users");
 
-            // Primary key
+            entity.HasDiscriminator<string>("TYPE")
+                .HasValue<Doctor>("DOCTOR")
+                .HasValue<Patient>("PATIENT")
+                .HasValue<Manager>("MANAGER");
+         
+            entity.ToTable("Users");
+
+         
             entity.HasKey(u => u.Id);
 
-            // Properties
+            
             entity.Property(u => u.FirstName)
                 .IsRequired()
                 .HasMaxLength(50);
@@ -34,21 +45,41 @@ public class UserDbContext : DbContext
                 .IsRequired()
                 .HasMaxLength(100);
 
+
             entity.Property(u => u.PhoneNumber)
                 .HasMaxLength(20);
 
+            entity.Property(u => u.Gender)
+                .HasConversion<string>();
+
+            entity.Property(u => u.BirthDate)
+                .HasColumnType("date");
+
             entity.Property(u => u.Password)
-                .IsRequired()
+                .IsRequired(false)
                 .HasMaxLength(255);
 
-            // MySQL-compatible timestamps
-            entity.Property(u => u.CreatedAt)
-                .HasColumnType("datetime")
-                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(u => u.CreatedAt).ValueGeneratedOnAdd();
+            entity.Property(u => u.UpdatedAt).ValueGeneratedOnAddOrUpdate();
 
-            entity.Property(u => u.UpdatedAt)
-                .HasColumnType("datetime")
-                .HasDefaultValueSql("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
         });
+
+        modelBuilder.Entity<Doctor>(entity =>
+        {
+            entity.Property(d => d.Speciality).HasConversion<string>().IsRequired();
+            entity.Property(d => d.LicenseNo).HasMaxLength(15).IsRequired();
+        });
+
+        modelBuilder.Entity<Patient>(entity =>
+        {
+            entity.Property(p => p.BloodType).HasConversion<string>().IsRequired();
+        });
+
+        modelBuilder.Entity<Manager>(entity =>
+        {
+            entity.Property(m => m.OfficeNo).HasMaxLength(15).IsRequired();
+        });
+
+
     }
 }
