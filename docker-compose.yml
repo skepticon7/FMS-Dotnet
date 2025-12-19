@@ -40,15 +40,12 @@ services:
     depends_on:
       - consul
     
-#  users.api:
-#    build:
-#        context: .
-#        dockerfile: backend/UserService/Dockerfile
-#    container_name: user-service
-#    hostname: user-service
-#    ports:
-#      - "5034:8080"
-#    networks:
-#      - proxybackend
-#    depends_on:
-#      - consul
+  redis:
+    image: redis:alpine
+    container_name: FMS.Redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis-data:/data
+    command: [ "redis-server", "--appendonly", "yes"]
+    restart: unless-stopped

@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Steeltoe.Discovery.Consul;
-using Steeltoe.Discovery.Consul.Configuration;
 using UserService.Api;
 using UserService.Api.Middleware;
 using UserService.Application;
