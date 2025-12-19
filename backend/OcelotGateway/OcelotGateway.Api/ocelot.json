@@ -1,35 +1,39 @@
 ﻿{
   "Routes": [
     {
-      "DownstreamPathTemplate": "/{everything}",
+      "DownstreamPathTemplate": "/api/auth/login",
+      "UpstreamPathTemplate": "/user-service/api/auth/login",
+      "UpstreamHttpMethod": ["POST"],
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
-        {
-          "Host": "host.docker.internal",
-          "Port": 5034
-        }
-      ],
-      "UpstreamPathTemplate": "/user-service/{everything}",
-      "UpstreamHttpMethod": ["GET", "POST", "PUT", "DELETE"],
-      "LoadBalancerOptions": {
-        "Type": "RoundRobin"
-      }
+        { "Host": "host.docker.internal", "Port": 5034 }
+      ]
+      // ❌ No AuthenticationOptions → public route
     },
+
+    {
+      "DownstreamPathTemplate": "/{everything}",
+      "UpstreamPathTemplate": "/user-service/{everything}",
+      "UpstreamHttpMethod": ["GET","POST","PUT","DELETE","PATCH"],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      },
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        { "Host": "host.docker.internal", "Port": 5034 }
+      ],
+      "LoadBalancerOptions": { "Type": "RoundRobin" }
+    },
+
     {
       "UpstreamPathTemplate": "/file-service/{everything}",
-      "UpstreamHttpMethod": [ "Get", "Post", "Put", "Delete" ],
-      "LoadBalancerOptions": {
-        "Type": "RoundRobin"
-      },
-
+      "UpstreamHttpMethod": ["GET","POST","PUT","DELETE"],
       "DownstreamPathTemplate": "/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
-        {
-          "Host": "host.docker.internal",
-          "Port": 5035
-        }
-      ]
+        { "Host": "host.docker.internal", "Port": 5035 }
+      ],
+      "LoadBalancerOptions": { "Type": "RoundRobin" }
     }
   ]
 }

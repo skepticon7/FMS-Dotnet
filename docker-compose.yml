@@ -39,13 +39,50 @@ services:
       - proxybackend
     depends_on:
       - consul
-    
+  
+        
   redis:
-    image: redis:alpine
-    container_name: FMS.Redis
+    image: "redis:7.0-alpine"
+    container_name: redis
     ports:
       - "6379:6379"
-    volumes:
-      - ./redis-data:/data
-    command: [ "redis-server", "--appendonly", "yes"]
-    restart: unless-stopped
+    command: >
+      redis-server 
+      --appendonly no
+    depends_on:
+      - consul
+        
+  redis-insight:
+    image : redis/redisinsight:latest
+    container_name: redis-insight
+    ports:
+      - "5540:5540"
+    depends_on:
+      - redis
+      - consul
+        
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    depends_on:
+      - consul
+  
+    
+#  users.api:
+#    build:
+#        context: .
+#        dockerfile: backend/UserService/Dockerfile
+#    container_name: user-service
+#    hostname: user-service
+#    ports:
+#      - "5034:8080"
+#    networks:
+#      - proxybackend
+#    depends_on:
+#      - consul

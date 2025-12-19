@@ -24,6 +24,7 @@ public class ExceptionMiddleware : IMiddleware
             switch (ex)
             {
                 case ValidationException ve:
+                    Console.Write("Validation Exception Caught in Middleware");
                     response.StatusCode = (int)HttpStatusCode.BadRequest;
                     apiResponse.StatusCode = response.StatusCode;
                     apiResponse.Message = string.Join(" | ", ve.Errors.Select(e => e.ErrorMessage));
@@ -37,6 +38,19 @@ public class ExceptionMiddleware : IMiddleware
                 
                 case AlreadyExistsException :
                     response.StatusCode = (int)HttpStatusCode.Conflict;
+                    apiResponse.StatusCode = response.StatusCode;
+                    apiResponse.Message = ex.Message;
+                    break;
+                
+                case InvalidCredentialsException :
+                    response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                    apiResponse.StatusCode = response.StatusCode;
+                    apiResponse.Message = ex.Message;
+                    break;
+                
+                
+                case ForbiddenException :
+                    response.StatusCode = (int)HttpStatusCode.Forbidden;
                     apiResponse.StatusCode = response.StatusCode;
                     apiResponse.Message = ex.Message;
                     break;

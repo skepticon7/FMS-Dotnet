@@ -5,5 +5,5 @@ namespace UserService.Domain.Entities;
 
 public class Patient : User
 {
-    public string BloodType { get; set; } = default!;
+    public BloodType? BloodType { get; set; } = default!;
 }
