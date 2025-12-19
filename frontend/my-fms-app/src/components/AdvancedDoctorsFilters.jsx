@@ -16,12 +16,12 @@ const validationSchema = Yup.object({
     page : Yup.number().required(),
     name : Yup.string().nullable(),
     genders : Yup.array().of(Yup.string()).required(),
-    bloodTypes : Yup.array().of(Yup.string()).required(),
+    specialities : Yup.array().of(Yup.string()).required(),
 })
 
 
 
-const AdvancedPatientsFilters = ({isOpen , onClose  , setAdvancedFilterOptions  }) => {
+const AdvancedDoctorsFilters = ({isOpen , onClose  , setAdvancedFilterOptions  }) => {
     const {user} = useAuth();
     const role = user?.roles?.split("_")[1];
     const [loading , setLoading] = useState(false);
@@ -37,10 +37,8 @@ const AdvancedPatientsFilters = ({isOpen , onClose  , setAdvancedFilterOptions  
         page : 1,
         genders : [],
         name :'',
-        bloodTypes : [],
+        specialities : [],
     }) , [])
-
-
 
 
     const genders = [
@@ -48,18 +46,18 @@ const AdvancedPatientsFilters = ({isOpen , onClose  , setAdvancedFilterOptions  
         { value: "FEMALE", label: "Female" },
     ];
 
-    const bloodTypes = [
-        { value: "O_POSITIVE", label: "O+" },
-        { value: "O_NEGATIVE", label: "O-" },
 
-        { value: "A_POSITIVE", label: "A+" },
-        { value: "A_NEGATIVE", label: "A-" },
+    const specialities = [
 
-        { value: "B_POSITIVE", label: "B+" },
-        { value: "B_NEGATIVE", label: "B-" },
+        { value: "Cardiology", label: "Cardiology" },
+        { value: "Neurology", label: "Neurology" },
 
-        { value: "AB_POSITIVE", label: "AB+" },
-        { value: "AB_NEGATIVE", label: "AB-" },
+        { value: "Gynecology", label: "Gynecology" },
+        { value: "Dermatology", label: "Dermatology" },
+
+        { value: "Pediatrics", label: "Pediatrics" },
+        { value: "GeneralPractice", label: "General Practice" },
+
     ];
 
 
@@ -85,11 +83,11 @@ const AdvancedPatientsFilters = ({isOpen , onClose  , setAdvancedFilterOptions  
                         <h2 className="text-lg font-semibold flex gap-2 items-center justify-start">
                             <Funnel className='w-5 h-5 text-main-green'/>
                             <p className='font-semibold'>
-                                Advanced Patients Filtering
+                                Advanced Doctors Filtering
                             </p>
                         </h2>
                         <p className='text-gray-400 text-sm'>
-                            Customize your search criteria to find specific patients
+                            Customize your search criteria to find specific doctors
 
                         </p>
                     </div>
@@ -103,7 +101,7 @@ const AdvancedPatientsFilters = ({isOpen , onClose  , setAdvancedFilterOptions  
                             setAdvancedFilterOptions(({
                                 page : values.page,
                                 name : values.name,
-                                bloodTypes : values.bloodTypes,
+                                specialities : values.specialities,
                                 genders : values.genders,
                             }))
                             setFiltersApplied(true);
@@ -179,37 +177,37 @@ const AdvancedPatientsFilters = ({isOpen , onClose  , setAdvancedFilterOptions  
                                                         className="w-4 h-4 bg-red-100 rounded flex items-center justify-center">
                                                         <div className="w-2 h-2 bg-red-600 rounded-full"></div>
                                                     </div>
-                                                    <label className="text-sm font-medium">Blood type</label>
+                                                    <label className="text-sm font-medium">Speciality</label>
                                                 </div>
                                                 <button
                                                     type='button'
                                                     onClick={() => {
-                                                        setFieldValue("bloodTypes", values.bloodTypes.length === bloodTypes.length ? [] : bloodTypes.map(option => option.value))
+                                                        setFieldValue("specialities", values.specialities.length === specialities.length ? [] : specialities.map(option => option.value))
                                                     }}
                                                     className='cursor-pointer bg-transparent transition-colors duration-200 hover:bg-gray-100 font-medium text-gray-500 rounded-md px-3 py-1'
                                                 >
                                                     <p className='text-xs'>Select All</p>
                                                 </button>
                                             </div>
-                                            <p className='text-xs text-gray-400'>Select blood type to include in the
+                                            <p className='text-xs text-gray-400'>Select speciality to include in the
                                                 filter</p>
                                             <div className="flex flex-col gap-2">
-                                                {bloodTypes.map((type) => (
-                                                    <label key={type.value} className="flex items-center gap-2">
+                                                {specialities.map((speciality) => (
+                                                    <label key={speciality.value} className="flex items-center gap-2">
                                                         <input
                                                             type="checkbox"
                                                             name="bloodTypes"
-                                                            value={type.value}
-                                                            checked={values.bloodTypes.includes(type.value)}
+                                                            value={speciality.value}
+                                                            checked={values.specialities.includes(speciality.value)}
                                                             onChange={(e) => {
-                                                                const bloodTypes = e.target.checked
-                                                                    ? [...values.bloodTypes, type.value]
-                                                                    : values.bloodTypes.filter((v) => v !== type.value);
-                                                                setFieldValue("bloodTypes", bloodTypes);
+                                                                const specialities = e.target.checked
+                                                                    ? [...values.specialities, speciality.value]
+                                                                    : values.specialities.filter((v) => v !== speciality.value);
+                                                                setFieldValue("specialities", specialities);
                                                             }}
                                                             className="h-4 w-4 checkbox rounded border-gray-300 text-main-green focus:ring-main-green"
                                                         />
-                                                        <span className="text-sm font-medium">{type.label}</span>
+                                                        <span className="text-sm font-medium">{speciality.label}</span>
                                                     </label>
                                                 ))}
                                             </div>
@@ -256,4 +254,4 @@ const AdvancedPatientsFilters = ({isOpen , onClose  , setAdvancedFilterOptions  
 
 }
 
-export default AdvancedPatientsFilters;
+export default AdvancedDoctorsFilters;
