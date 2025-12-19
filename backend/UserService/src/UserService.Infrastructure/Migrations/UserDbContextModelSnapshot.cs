@@ -30,13 +30,14 @@ namespace UserService.Infrastructure.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
 
-                    b.Property<DateTime>("BirthDate")
+                    b.Property<DateTime?>("BirthDate")
                         .HasColumnType("date");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                        .HasColumnType("datetime(6)");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("CreatedAt"));
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -49,8 +50,10 @@ namespace UserService.Infrastructure.Migrations
                         .HasColumnType("varchar(50)");
 
                     b.Property<string>("Gender")
-                        .IsRequired()
                         .HasColumnType("longtext");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<string>("LastName")
                         .IsRequired()
@@ -58,7 +61,6 @@ namespace UserService.Infrastructure.Migrations
                         .HasColumnType("varchar(50)");
 
                     b.Property<string>("Password")
-                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("varchar(255)");
 
@@ -73,9 +75,10 @@ namespace UserService.Infrastructure.Migrations
                         .HasColumnType("varchar(8)");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime(6)");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
 
                     b.HasKey("Id");
 
@@ -92,7 +95,8 @@ namespace UserService.Infrastructure.Migrations
 
                     b.Property<string>("LicenseNo")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(15)
+                        .HasColumnType("varchar(15)");
 
                     b.Property<string>("Speciality")
                         .IsRequired()
@@ -107,7 +111,8 @@ namespace UserService.Infrastructure.Migrations
 
                     b.Property<string>("OfficeNo")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(15)
+                        .HasColumnType("varchar(15)");
 
                     b.HasDiscriminator().HasValue("MANAGER");
                 });

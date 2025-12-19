@@ -1,4 +1,6 @@
-﻿using MediatR;
+﻿using AutoMapper;
+using MediatR;
+using UserService.Application.Common.Exceptions;
 using UserService.Application.DTOs;
 using UserService.Application.Features.Doctors.Queries.GetDoctorByEmail;
 using UserService.Application.Interfaces;
@@ -6,28 +8,17 @@ using UserService.Domain.Entities;
 
 namespace UserService.Application.Features.Doctors.Queries.GetDoctorByEmail;
 
-public class GetDoctorByEmailHandler : IRequestHandler<GetDoctorByEmailQuery , DoctorDTO?>
+public class GetDoctorByEmailHandler(IMapper mapper , IDoctorRepository doctorRepository) : IRequestHandler<GetDoctorByEmailQuery , DoctorDTO?>
 {
 
-    public readonly IDoctorRepository _DoctorRepository;
-
-    public GetDoctorByEmailHandler(IDoctorRepository doctorRepository) => _DoctorRepository = doctorRepository;
+    private readonly IDoctorRepository _DoctorRepository = doctorRepository;
+    private readonly IMapper _mapper = mapper;
     
     public async Task<DoctorDTO?> Handle(GetDoctorByEmailQuery request, CancellationToken cancellationToken)
     {
-        var user = await _DoctorRepository.GetDoctorByEmailAsync(request.Email);
-        if (user == null) return null;
-        return new DoctorDTO
-        {
-            Id = user.Id,
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            Email = user.Email,
-            PhoneNumber = user.PhoneNumber,
-            LicenseNo = user.LicenseNo,
-            Specialty = user.Speciality.ToString(),
-            createdAt = user.CreatedAt,
-            updatedAt = user.UpdatedAt
-        };
+        var doctor = await _DoctorRepository.GetDoctorByEmailAsync(request.Email);
+        if (doctor == null)
+            throw new NotFoundException($"Doctor with email : {request.Email} not found");
+        return _mapper.Map<DoctorDTO>(doctor);
     }
 }

@@ -56,17 +56,12 @@ public class UserDbContext : DbContext
                 .HasColumnType("date");
 
             entity.Property(u => u.Password)
-                .IsRequired()
+                .IsRequired(false)
                 .HasMaxLength(255);
 
-            // MySQL-compatible timestamps
-            entity.Property(u => u.CreatedAt)
-                .HasColumnType("datetime")
-                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(u => u.CreatedAt).ValueGeneratedOnAdd();
+            entity.Property(u => u.UpdatedAt).ValueGeneratedOnAddOrUpdate();
 
-            entity.Property(u => u.UpdatedAt)
-                .HasColumnType("datetime")
-                .HasDefaultValueSql("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
         });
 
         modelBuilder.Entity<Doctor>(entity =>
