@@ -69,6 +69,8 @@ namespace FileService.Application.Features.Files.Commands.UploadFile
             // C. Upload to Physical Storage (Local/S3)
             // We use the Folder ID as the subfolder name to keep things organized
             var storagePath = await _storage.SaveFileAsync(request.File, request.FolderId.ToString());
+            var azurePath = await _azureStorage.SaveFileAsync(request.File, request.FolderId.ToString());
+
             // D. Create File Entry
             var newFileEntry = new FileEntry
             {
