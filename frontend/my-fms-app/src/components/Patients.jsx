@@ -25,13 +25,13 @@ import {
   UserX,
   Play,
   CircleCheck,
-  ChevronLeft , ChevronRight,
+  ChevronLeft, ChevronRight,
   Droplets,
   Calendar,
   FunnelPlus,
   TrendingUp,
-    Droplet,
-  User2, MoreVertical,X
+  Droplet,
+  User2, MoreVertical, X, UserPlus
 } from "lucide-react";
 import {formatLabel} from "../Utils/formatLabel.js";
 import {useAuth} from "../context/AuthContext.jsx";
@@ -49,7 +49,7 @@ import UserViewUpdate from "./UserViewUpdate.jsx";
 import {Input} from "@/components/ui/input.js";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.js";
 import AdvancedFilters from "@/components/AdvancedFilters.jsx";
-import {AdvancedPatientsFilters} from "@/components/index.js";
+import {AdvancedPatientsFilters, PatientDoctorViewUpdate} from "@/components/index.js";
 
 
 const SearchBarFilter = ({filterOptions , setFilterOptions , advancedFilterOptions , setAdvancedFilterOptions, resetAllFilters}) => {
@@ -319,7 +319,7 @@ const PatientCard = ({patient  ,role , onView , onEdit}) => {
               {role === 'Manager' && (
                   <DropdownMenuItem>
                     <button
-                      onClick={() => onView()}
+                      onClick={() => onEdit()}
                       className=" flex items-center gap-2 w-full hover:bg-gray-100 cursor-pointer rounded-md transition-colors">
                     <SquarePen className="w-5 h-5 text-black"/>
                     <p className="font-regular text-sm">Edit Patient</p>
@@ -402,20 +402,20 @@ const Patients = () => {
 
 
   const [modalState, setModalState] = useState({
-    userRole : null,
-    technicianId: null,
+    userRole : "patient",
+    userId : null,
     isOpen: false,
     viewOnly: false,
     isEdit: false
   })
 
-  const handleOpenModal = (technicianId = null, userRole = null , viewOnly = false, isEdit = false) => {
+  const handleOpenModal = (userId = null , viewOnly = false, isEdit = false) => {
     setModalState({
-      userRole,
+      userRole : "patient",
       isOpen: true,
       viewOnly,
       isEdit,
-      technicianId
+      userId
     });
   }
 
@@ -519,8 +519,8 @@ const Patients = () => {
               {(role === "Manager") && (
                   <button
                       onClick={() => handleOpenModal(null, false, false)}
-                      className='flex items-center gap-5 self-end justify-center px-4 py-2 rounded-md transition-all duration-200 cursor-pointer bg-main-green/90 hover:bg-main-green'>
-                    <Plus className='text-white'/>
+                      className='flex items-center gap-2 self-end justify-center px-4 py-2 rounded-md transition-all duration-200 cursor-pointer bg-main-green/90 hover:bg-main-green'>
+                    <UserPlus className='text-white'/>
                     <p className='text-md text-white font-medium'>Create Patient</p>
                   </button>
               )}
@@ -548,21 +548,21 @@ const Patients = () => {
                         <PatientCard
                             patient={patient}
                             role={role}
-                            onView={() => handleOpenModal(patient.id, tech.role, true, false)}
-                            onEdit={() => handleOpenModal(patient.id, tech.role, false, true)}
+                            onView={() => handleOpenModal(patient.id , true , false)}
+                            onEdit={() => handleOpenModal(patient.id, false, true)}
                         />
                     ))}
                   </div>
               )}
             </>
         )}
-      <UserViewUpdate
+      <PatientDoctorViewUpdate
           userRole={modalState.userRole}
           viewOnly={modalState.viewOnly}
           isEdit={modalState.isEdit}
           isOpen={modalState.isOpen}
           onClose={handleCloseModal}
-          technicianId={modalState.technicianId}
+          userId={modalState.userId}
       />
     </div>
   )

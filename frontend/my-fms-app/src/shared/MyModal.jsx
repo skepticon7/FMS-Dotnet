@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import {X} from "lucide-react";
 
-function MyModal({ isOpen, onClose, children , isExporting = false }) {
+function MyModal({ isOpen, onClose, children , isExporting = false , loading}) {
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = "hidden";
@@ -18,7 +18,7 @@ function MyModal({ isOpen, onClose, children , isExporting = false }) {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 duration-200 transition-all">
-            <div className="bg-white rounded-lg shadow-lg relative">
+            <div className={`${loading ? '' : 'bg-white'} rounded-lg shadow-lg relative`}>
                 <button
                     disabled={isExporting}
                     onClick={onClose}

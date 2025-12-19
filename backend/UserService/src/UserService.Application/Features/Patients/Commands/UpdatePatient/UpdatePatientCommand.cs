@@ -9,7 +9,6 @@ public record UpdatePatientCommand(
     string? LastName ,
     string? Email , 
     string? PhoneNumber , 
-    string? Password , 
     DateTime? BirthDate , 
     string? Gender,
     string? BloodType

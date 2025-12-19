@@ -2,33 +2,28 @@
 using FluentValidation;
 using MediatR;
 using UserService.Application.Common.Exceptions;
+using UserService.Application.Common.Security;
 using UserService.Application.DTOs;
 using UserService.Application.Interfaces;
 
 namespace UserService.Application.Features.Doctors.Commands.UpdateDoctor;
 
-public class UpdateDoctorHandler : IRequestHandler<UpdateDoctorCommand , DoctorDTO?>
+public class UpdateDoctorHandler(
+    IDoctorRepository doctorRepository,
+    IValidator<UpdateDoctorCommand> validator,
+    IMapper mapper,
+    IPasswordHasher hasher)
+    : IRequestHandler<UpdateDoctorCommand, DoctorDTO?>
 {
+    private readonly IPasswordHasher _hasher = hasher;
 
-    private readonly IDoctorRepository _doctorRepository;
-    private readonly IValidator<UpdateDoctorCommand> _validator;
-    private readonly IMapper _mapper;
-
-    public UpdateDoctorHandler(IDoctorRepository doctorRepository, IValidator<UpdateDoctorCommand> validator , IMapper mapper
-        )
-    {
-        _doctorRepository = doctorRepository;
-        _validator = validator;
-        _mapper = mapper;
-    }
-    
     public async Task<DoctorDTO?> Handle(UpdateDoctorCommand request, CancellationToken cancellationToken)
     {
-        var doctor = await _doctorRepository.GetDoctorByIdAsync(request.Id);
+        var doctor = await doctorRepository.GetDoctorByIdAsync(request.Id);
         if (doctor == null)
             throw new NotFoundException($"Doctor with id {request.Id} doesn't exist");
         
-        var validationResult = await _validator.ValidateAsync(
+        var validationResult = await validator.ValidateAsync(
             request,
             opt => opt.IncludeRuleSets("Update")
             );
@@ -36,13 +31,14 @@ public class UpdateDoctorHandler : IRequestHandler<UpdateDoctorCommand , DoctorD
         if (!validationResult.IsValid)
             throw new ValidationException(validationResult.Errors);    
         
-        _mapper.Map(request, doctor);
+        mapper.Map(request, doctor);
 
-        var updatedDoctor = await _doctorRepository.UpdateDoctorAsync(doctor);
+        if(request.Password != null)
+            doctor.Password = _hasher.Hash(request.Password);
         
-        return _mapper.Map<DoctorDTO>(updatedDoctor);
+        var updatedDoctor = await doctorRepository.UpdateDoctorAsync(doctor);
         
+        return mapper.Map<DoctorDTO>(updatedDoctor);
         
-     
     }
 }

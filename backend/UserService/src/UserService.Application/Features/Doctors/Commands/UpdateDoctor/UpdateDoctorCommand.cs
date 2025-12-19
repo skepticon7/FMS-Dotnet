@@ -8,6 +8,7 @@ public record UpdateDoctorCommand(
     string? FirstName, 
     string? LastName ,
     string? Email , 
+    string? Password,
     string? PhoneNumber , 
     DateTime? BirthDate , 
     string? Speciality ,

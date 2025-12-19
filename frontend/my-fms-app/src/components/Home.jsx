@@ -40,7 +40,7 @@ import {
     Patients,
     Doctors,
     Files,
-    UsersManagement
+    UsersManagement, ManagerViewUpdate
 } from "./index.js";
 
 import {vivoMiniLogo} from "../assets/index.js";
@@ -73,13 +73,10 @@ const Home = () => {
     const [profileModalState , setProfileModal] = useState({
         userId : null,
         isOpen : false,
-        isEdit : false,
-        userRole : ""
     })
 
     const handleOpenModal = ( ) => {
-        setProfileModal(prev => ({
-            ...prev,
+        setProfileModal(_ => ({
             isEdit : true,
             isOpen: true
         }))
@@ -218,19 +215,22 @@ const Home = () => {
                                     </div>
                                     <hr className='border border-[1px] border-gray-300 w-full mt-2'/>
                                     <div className='w-full flex flex-col items-start justify-start gap-1'>
-                                        <button
-                                            onClick={() =>{
-                                                handleOpenModal()
-                                                setProfileDropDown(false)
-                                            }}
-                                            className='w-full cursor-pointer flex items-center justify-start rounded-md py-1 px-2 gap-3 hover:bg-gray-100 bg-transparent transition-colors duration-200 w-full'
-                                        >
-                                            <Settings className='w-4 h-4 text-black'/>
-                                            <p className='font-medium text-md'>Profile</p>
-                                        </button>
+                                        {role === 'Manager' && (
+                                            <button
+                                                onClick={() => {
+                                                    handleOpenModal()
+                                                    setProfileDropDown(false)
+                                                }}
+                                                className='w-full cursor-pointer flex items-center justify-start rounded-md py-1 px-2 gap-3 hover:bg-gray-100 bg-transparent transition-colors duration-200 w-full'
+                                            >
+                                                <Settings className='w-4 h-4 text-black'/>
+                                                <p className='font-medium text-md'>Profile</p>
+                                            </button>
+                                        )}
+
                                         <button
                                             onClick={() => handleLogout()}
-                                            className='w-full cursor-pointer flex items-center justify-start rounded-md py-1 px-2 gap-3 hover:bg-gray-100 bg-transparent transition-colors duration-200 w-full' >
+                                            className='w-full cursor-pointer flex items-center justify-start rounded-md py-1 px-2 gap-3 hover:bg-gray-100 bg-transparent transition-colors duration-200 w-full'>
                                             <LogOut className='w-4 h-4 text-black'/>
                                             <p className='font-medium text-md'>Log out</p>
                                         </button>
@@ -245,12 +245,10 @@ const Home = () => {
             <main className='p-6 flex-1 bg-gray-100 min-h-screen'>{renderCurrentPage()}</main>
             <NewIntervention isOpen={modalOpen} onClose={() => setModalOpen(false)}></NewIntervention>
             <NewExportation isOpen={dataModalOpen} onClose={() => setDataModalOpen(false)}/>
-            <UserViewUpdate
-                isEdit={profileModalState.isEdit}
+            <ManagerViewUpdate
                 isOpen={profileModalState.isOpen}
                 onClose={handleCloseModal}
-                userRole={profileModalState.userRole}
-                technicianId={profileModalState.userId}
+                managerId={profileModalState.userId}
             />
         </div>
 

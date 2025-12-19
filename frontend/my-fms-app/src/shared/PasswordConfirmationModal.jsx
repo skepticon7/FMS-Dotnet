@@ -6,6 +6,7 @@ import {confirmPassword} from "../services/api.js";
 import {Eye, EyeOff, Lock} from "lucide-react";
 import React, {useState} from "react";
 import {Input} from "@/components/ui/input.js";
+import {useAuth} from "@/context/AuthContext.jsx";
 
 const validationSchema = Yup.object({
     password : Yup.string().required("Password is required")
@@ -13,6 +14,8 @@ const validationSchema = Yup.object({
 
 const PasswordConfirmationModal = ({isOpen , onClose , onSuccess}) => {
     const [showPassword, setShowPassword] = useState(false);
+    const {user} = useAuth();
+    const userId = user?.id;
 
     return (
         <MyModal isOpen={isOpen} onClose={onClose}>
@@ -25,14 +28,14 @@ const PasswordConfirmationModal = ({isOpen , onClose , onSuccess}) => {
                     onSubmit={async (values , {setSubmitting}) => {
                         setSubmitting(true);
                         try {
-                            const res = await confirmPassword(values.password);
+                            const res = await confirmPassword(values.password , userId);
                             console.log(res);
                             if(res.status !== 200) throw new Error(res?.response?.data)
                             onClose();
                             onSuccess();
                         }catch (e) {
                             console.log(e);
-                            toast.error(e.response?.data?.message || "Internal Server Error");
+                            toast.error("Internal Server Error");
                         } finally {
                             setSubmitting(false);
                         }

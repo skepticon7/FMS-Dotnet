@@ -10,6 +10,7 @@ using UserService.Application.Common.Security;
 using UserService.Application.DTOs;
 using UserService.Application.Features.Patients.Queries.GetPatientById;
 using UserService.Application.Features.Patients.Queries.GetPatients;
+using UserService.Application.Features.Patients.Queries.GetPatientsStats;
 using UserService.Application.Interfaces;
 using UserService.Domain.Entities;
 
@@ -19,7 +20,8 @@ public class CreatePatientHandler(
     IMapper _mapper , 
     IPatientRepository _patientRepository,
     IValidator<CreatePatientCommand> _validator,
-    ICacheService _cacheService
+    ICacheService _cacheService,
+    IDistributedCache _cache
     ) : IRequestHandler<CreatePatientCommand, PatientDTO>
 {
 
@@ -35,16 +37,18 @@ public class CreatePatientHandler(
         if (!validationResult.IsValid)
             throw new ValidationException(validationResult.Errors);
 
-        var patientCheck = await _patientRepository.GetPatientByEmailAsync(request.Email);
+        var patientCheck = await _patientRepository.GetPatientByEmailAsync(request.Email, cancellationToken);
         
         if (patientCheck != null)
             throw new AlreadyExistsException($"Patient already exists");
 
         var patient = _mapper.Map<Patient>(request);
         
-        var createdPatient = await _patientRepository.CreatePatientAsync(patient);
+        var createdPatient = await _patientRepository.CreatePatientAsync(patient, cancellationToken);
         
         await _cacheService.RemoveCacheByPrefix(nameof(GetPatientsQuery), cancellationToken);
+
+        await _cacheService.RemoveCacheByPrefix(nameof(GetPatientsStatsQuery), cancellationToken);
 
         return _mapper.Map<PatientDTO>(createdPatient);
     }

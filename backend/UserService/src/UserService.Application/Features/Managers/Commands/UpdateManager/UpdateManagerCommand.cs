@@ -8,8 +8,9 @@ public record UpdateManagerCommand(
         string? FirstName, 
         string? LastName ,
         string? Email , 
-        string? PhoneNumber , 
-        DateOnly? BirthDate , 
+        string? PhoneNumber ,
+        string? Password,
+        DateTime? BirthDate , 
         string? OfficeNo,
         string? Gender
     ) : IRequest<ManagerDTO>;
