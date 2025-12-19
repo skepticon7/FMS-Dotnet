@@ -212,7 +212,7 @@ export const updatePatientById = async (patientId , values) => {
 }
 
 export const updateDoctorById = async (doctorId , values) => {
-    if(!values.password) delete technician.password;
+    if(!values.password) delete values.password;
     try {
         const response = await axios.patch(`${apiGateway}/user-service/api/doctor/updateDoctorById/${doctorId}` , values , {...getAuthConfig()});
         console.log(response);
@@ -280,6 +280,24 @@ export const deleteTechnician = async (technicianId) => {
     }
 }
 
+
+export const deletePatient = async (patientId) => {
+    try {
+        const response = await axios.delete(`${apiGateway}/user-service/api/patient/deletePatientById/${patientId}` , {...getAuthConfig()});
+        return response;
+    }catch (e) {
+        throw e;
+    }
+}
+
+export const deleteDoctor = async (doctorId) => {
+    try {
+        const response = await axios.delete(`${apiGateway}/user-service/api/doctor/deleteDoctorById/${doctorId}` , {...getAuthConfig()});
+        return response;
+    }catch (e) {
+        throw e;
+    }
+}
 
 // get requests
 
@@ -458,6 +476,15 @@ export const getPatients = async (filters) => {
 export const getPatientStats = async () => {
     try {
         const response = await axios.get(`${apiGateway}/user-service/api/patient/getPatientsStats` ,{...getAuthConfig()});
+        return response;
+    }catch (e) {
+        throw e;
+    }
+}
+
+export const getDoctorStats = async () => {
+    try{
+        const response = await axios.get(`${apiGateway}/user-service/api/doctor/getDoctorStats` ,{...getAuthConfig()});
         return response;
     }catch (e) {
         throw e;

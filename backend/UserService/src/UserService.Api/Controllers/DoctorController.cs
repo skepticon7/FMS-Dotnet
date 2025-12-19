@@ -5,6 +5,7 @@ using UserService.Application.Features.Doctors.Commands.DeleteDoctor;
 using UserService.Application.Features.Doctors.Commands.UpdateDoctor;
 using UserService.Application.Features.Doctors.Queries.GetDoctorById;
 using UserService.Application.Features.Doctors.Queries.GetDoctors;
+using UserService.Application.Features.Doctors.Queries.GetDoctorsStats;
 using UserService.Application.Features.Users.Commands;
 
 namespace UserService.Api.Controllers;
@@ -37,20 +38,29 @@ public class DoctorController : ControllerBase
     [HttpGet("getDoctors")]
     public async Task<IActionResult> GetDoctors(
         [FromQuery] int page = 1,
-        [FromQuery] string speciality = null,
-        [FromQuery] string gender = null,
-        [FromQuery] string ageSort = null
+        [FromQuery] List<string> specialities = null,
+        [FromQuery] List<string> genders = null,
+        [FromQuery] string name = null
     )
     {
         return Ok(await _mediator.Send(
             new GetDoctorsQuery
             {
                 Page = page,
-                Speciality = speciality, 
-                AgeSort = ageSort,
-                Gender = gender
+                Specialities = specialities, 
+                Name= name,
+                Genders = genders
             }));
     }
+
+
+    [Authorize(Policy = "ManagerOnly")]
+    [HttpGet("getDoctorStats")]
+    public async Task<IActionResult> GetDoctorStats()
+    {
+        return Ok(await _mediator.Send(new GetDoctorsStatsQuery()));
+    }
+    
     
     [Authorize(Policy = "ManagerOnly")]
     [HttpPatch("updateDoctorById/{id}")]

@@ -62,12 +62,6 @@ const doctorValidationSchema = Yup.object({
     licenseNo : Yup.string().required("Required"),
 
     password: Yup.string()
-        .min(8, "Password must be at least 8 characters")
-        .max(20, "Password must be at max 20 characters")
-        .matches(
-            /^(?=.*[0-9])(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\-=/\\]).{8,20}$/,
-            "Password must be 8-20 characters, include at least 1 number and 1 special character"
-        ),
 })
 
 const patientValidationSchema = Yup.object({
@@ -299,10 +293,10 @@ const PatientDoctorViewUpdate = ({isOpen , onClose , isEdit , viewOnly = false ,
                                     }
                                 }}
                             >
-                                {({isValid , isSubmitting , values , dirty , setFieldValue}) => {
+                                {({isValid , isSubmitting , values  , errors , dirty , setFieldValue}) => {
                                     useEffect(() => {
-                                        console.log("Dirty:", dirty);
-                                    }, [dirty]);
+                                        console.log("errors:", errors);
+                                    }, [errors]);
                                     return (
                                         <Form className='space-y-4 max-h-[70vh] overflow-y-auto pr-2 w-full'>
                                             <div className='flex w-full gap-5'>
@@ -323,6 +317,7 @@ const PatientDoctorViewUpdate = ({isOpen , onClose , isEdit , viewOnly = false ,
                                                                         Name</label>
                                                                 </div>
                                                                 <Input
+                                                                    disabled={viewOnly}
                                                                     value={values.firstName}
                                                                     onChange={(e) => setFieldValue('firstName', e.target.value)}
                                                                     name="firstName" as="input" type='text'
@@ -339,7 +334,7 @@ const PatientDoctorViewUpdate = ({isOpen , onClose , isEdit , viewOnly = false ,
                                                                     <label className="text-sm font-medium">Last
                                                                         Name</label>
                                                                 </div>
-                                                                <Input value={values.lastName}
+                                                                <Input disabled={viewOnly} value={values.lastName}
                                                                        onChange={(e) => setFieldValue('lastName', e.target.value)}
                                                                        name="lastName" as="input"
                                                                        type='text'
@@ -626,7 +621,7 @@ const PatientDoctorViewUpdate = ({isOpen , onClose , isEdit , viewOnly = false ,
                         </div>
                     ))}
             </MyModal>
-            <PasswordConfirmationModal onSuccess={handleUpdatePatientDoctor} isOpen={passwordModalOpen} onClose={() => setPasswordModalOpen(false)}/>
+            <PasswordConfirmationModal toDeletedRole={userRole} onSuccess={handleUpdatePatientDoctor} isOpen={passwordModalOpen} onClose={() => setPasswordModalOpen(false)}/>
 
         </>
     )
