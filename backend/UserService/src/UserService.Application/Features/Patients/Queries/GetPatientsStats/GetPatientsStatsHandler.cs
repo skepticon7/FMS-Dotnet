@@ -8,6 +8,6 @@ public class GetPatientsStatsHandler(IPatientRepository _patientRepository) : IQ
 {
     public async Task<PatientStatsDTO> Handle(GetPatientsStatsQuery request, CancellationToken cancellationToken)
     {
-        return await _patientRepository.GetPatientsStats();
+        return await _patientRepository.GetPatientsStats([] , cancellationToken);
     }
 }

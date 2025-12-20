@@ -12,7 +12,7 @@ const validationSchema = Yup.object({
     password : Yup.string().required("Password is required")
 })
 
-const PasswordConfirmationModal = ({isOpen , onClose , onSuccess}) => {
+const PasswordConfirmationModal = ({isOpen , onClose , onSuccess , toDelete = false , toDeletedRole}) => {
     const [showPassword, setShowPassword] = useState(false);
     const {user} = useAuth();
     const userId = user?.id;
@@ -64,11 +64,11 @@ const PasswordConfirmationModal = ({isOpen , onClose , onSuccess}) => {
                             <button
                                 disabled={!isValid || isSubmitting}
                                 type="submit"
-                                className={`bg-main-green text-sm flex items-center justify-center w-full mt-5 text-white font-medium rounded-sm py-2 ${
+                                className={`${toDelete ? 'bg-red-500' : 'bg-main-green'} text-sm flex items-center justify-center w-full mt-5 text-white font-medium rounded-sm py-2 ${
                                     (!isValid || isSubmitting) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
                                 }`}
                             >
-                                {isSubmitting ? 'Confirming...' : 'Confirm Password'}
+                                {isSubmitting ? (toDelete ? 'Deleting...' : 'Confirming...') : (toDelete ? `Delete ${toDeletedRole === 'patient' ? 'Patient' : 'Doctor'}` : 'Confirm Password')}
                             </button>
                         </Form>
                     )}

@@ -1,4 +1,9 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react'
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import {
   ChevronDown,
   Plus,
@@ -12,68 +17,173 @@ import {
   BriefcaseIcon,
   ListCheck,
   Pin,
-  SquarePen, Phone, Mail, Briefcase, ServerCrash, UserX, Play, CircleCheck
+  SquarePen,
+  Phone,
+  Mail,
+  Briefcase,
+  ServerCrash,
+  UserX,
+  Play,
+  CircleCheck,
+  ChevronLeft, ChevronRight,
+  Droplets,
+  Calendar,
+  FunnelPlus,
+  TrendingUp,
+  Trash,
+  Droplet,
+    Microscope,
+  User2, MoreVertical, X, UserPlus
 } from "lucide-react";
 import {formatLabel} from "../Utils/formatLabel.js";
 import {useAuth} from "../context/AuthContext.jsx";
-import {getInterventionTypes, getTechniciansSupervisors} from "../services/api.js";
+import {
+  getInterventionTypes,
+  getPatients,
+  getDoctors,
+  getTechniciansSupervisors,
+  getPatientStats, deletePatient, getDoctorStats, deleteDoctor
+} from "../services/api.js";
 import OverviewCard from "../shared/OverviewCard.jsx";
 import {getInitials} from "../Utils/getInitials.js";
 import axios from "axios";
 import UserViewUpdate from "./UserViewUpdate.jsx";
-import {Input} from "@/components/ui/input.tsx";
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
+import {Input} from "@/components/ui/input.js";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.js";
+import AdvancedFilters from "@/components/AdvancedFilters.jsx";
+import {AdvancedPatientsFilters, PatientDoctorViewUpdate} from "@/components/index.js";
+import PasswordConfirmationModal from "@/shared/PasswordConfirmationModal.jsx";
+import toast from "react-hot-toast";
+import AdvancedDoctorsFilters from "@/components/AdvancedDoctorsFilters.jsx";
 
-const SearchBarFilter = ({filterOptions , setFilterOptions}) => {
-  const {searchTerm  , selectedStatus} = filterOptions;
 
-  const technicianStatus = [
-    {value : "AVAILABLE" , label : "Available"},
-    {value : "BUSY" , label: "Busy"},
-    {value : "ON_LEAVE" , label : "On Leave"},
+const SearchBarFilter = ({filterOptions , setFilterOptions , advancedFilterOptions , setAdvancedFilterOptions, resetAllFilters}) => {
+
+  const {name  , speciality , gender , sorting} = filterOptions;
+  const {filtersApplied , setFiltersApplied} = useAuth();
+  const [advancedModalOpen , setAdvancedModalOpen] = useState(false);
+
+
+  const specialities = [
+
+    { value: "Cardiology", label: "Cardiology" },
+    { value: "Neurology", label: "Neurology" },
+
+    { value: "Gynecology", label: "Gynecology" },
+    { value: "Dermatology", label: "Dermatology" },
+
+    { value: "Pediatrics", label: "Pediatrics" },
+    { value: "GeneralPractice", label: "General Practice" },
+
   ];
+
 
   return(
       <div className='flex items-start justify-center w-full gap-5 flex-col p-6 bg-white rounded-lg border-[1px] border-gray-300'>
-        <p className='text-2xl font-bold text-black'>Filters & Search</p>
-        <div className='grid grid-cols-3 w-full gap-5'>
-            <Input
-                value={searchTerm}
-                onChange={(e) => setFilterOptions({...filterOptions , searchTerm : e.target.value})}
-                placeholder="Search Patients..."
-                className="py-5 focus:outline-none focus:ring-0 w-full"
-            />
+        <div className='flex items-center justify-between w-full'>
+          <p className='text-2xl font-bold text-black'>Filters & Search</p>
+          <div className='flex gap-2 items-center justify-center'>
+            {filtersApplied ? (
+                <button
+                    onClick={() => {
+                      resetAllFilters();
+                      setFiltersApplied(false)
+                    }}
+                    className='flex gap-3 items-center justify-center cursor-pointer bg-red-500/90 transition-colors duration-200 rounded-md p-2  hover:bg-red-500'>
+                  <X className='w-5 h-5 text-white'/>
+                  <p className='text-sm font-medium text-white'>Remove Filters </p>
+                </button>
+            ) : (
+                <button
+                    onClick={() => setAdvancedModalOpen(true)}
+                    className='flex gap-3 items-center justify-center cursor-pointer hover:bg-gray-100 transition-colors duration-200 rounded-md p-2 border border-[1px] border-gray-300 bg-transparent'>
+                  <FunnelPlus className='w-5 h-5 text-black'/>
+                  <p className='text-sm font-medium '>Advanced </p>
+                </button>
+            )}
+            <div className="flex items-center gap-2">
+              <button
+                  onClick={() => setAdvancedFilterOptions((prev) => ({...prev , page : prev.page - 1}))}
+                  disabled={advancedFilterOptions.page === 1}
+                  className="h-10 flex items-center justify-center border border-gray-300 px-3 cursor-pointer transition-colors duration-200 bg-transparent hover:bg-gray-100 rounded-md disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+              >
+                <ChevronLeft className="w-5 h-5 text-black"/>
+              </button>
+
+              <button
+
+                  className="h-10 flex items-center justify-center border border-gray-300 px-3 cursor-pointer transition-colors duration-200 bg-transparent hover:bg-gray-100 rounded-md"
+              >
+                <p className='font-semibold'>Page {advancedFilterOptions.page}</p>
+              </button>
+              <button
+                  onClick={() => setAdvancedFilterOptions((prev) => ({...prev , page : prev.page + 1}))}
+                  className="h-10 flex items-center justify-center border border-gray-300 px-3 cursor-pointer transition-colors duration-200 bg-transparent hover:bg-gray-100 rounded-md"
+              >
+                <ChevronRight className="w-5 h-5 text-black"/>
+              </button>
+            </div>
+          </div>
+
+        </div>
+        <div className='grid grid-cols-4 w-full gap-5'>
+          <Input
+              value={name}
+              onChange={(e) => setFilterOptions({...filterOptions, name: e.target.value})}
+              placeholder="Search Patients..."
+              className="py-5 focus:outline-none focus:ring-0 w-full"
+          />
 
           <Select
-              value={selectedStatus}
+              value={speciality}
               onValueChange={(value) => setFilterOptions({
                 ...filterOptions,
-                selectedStatus : value
+                speciality : value === 'all' ? '' : value
               })}
           >
             <SelectTrigger
                 className='w-full py-5  rounded-md hover:bg-gray-50 transition-colors duration-200'>
               <SelectValue
-                  placeholder="Select technician status"/>
+                  placeholder="Select Speciality"/>
             </SelectTrigger>
             <SelectContent>
-              <SelectItem key={'all'} value="all">All Statuses</SelectItem>
-              {technicianStatus.map((status) => (
+              <SelectItem value={'all'}>All types</SelectItem>
+              {specialities.map((speciality) => (
                   <SelectItem
-                      key={status.value}
-                      value={status.value}
+                      key={speciality.value}
+                      value={speciality.value}
                   >
-                    <div>{status.label}</div>
+                    <div>{speciality.label}</div>
                   </SelectItem>
               ))}
             </SelectContent>
           </Select>
 
+
           <Select
-              value={filterOptions.sortType}
+              value={gender}
               onValueChange={(value) => setFilterOptions({
                 ...filterOptions,
-                sortType : value
+                gender: value === 'all' ? '' : value
+              })}
+          >
+            <SelectTrigger
+                className='w-full py-5  rounded-md hover:bg-gray-50 transition-colors duration-200'>
+              <SelectValue
+                  placeholder="Select Gender"/>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value='all'>All Genders</SelectItem>
+              <SelectItem value='Male'>Male</SelectItem>
+              <SelectItem value="Female">Female</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select
+              value={sorting}
+              onValueChange={(value) => setFilterOptions({
+                ...filterOptions,
+                sorting : value
               })}
           >
             <SelectTrigger
@@ -82,218 +192,240 @@ const SearchBarFilter = ({filterOptions , setFilterOptions}) => {
                   placeholder="Select sorting criteria"/>
             </SelectTrigger>
             <SelectContent>
-              <SelectItem key={'newest'} value="newest">newest</SelectItem>
+              <SelectItem key={'newest'} value="newest">Newest</SelectItem>
               <SelectItem value='oldest'>Oldest</SelectItem>
-              <SelectItem value="ICA">Interventions Completed - Ascending</SelectItem>
-              <SelectItem value="ICD">Interventions Completed - Descending</SelectItem>
-              <SelectItem value="IAA">Interventions Assigned - Ascending</SelectItem>
-              <SelectItem value="IAD">Interventions Assigned - Descending</SelectItem>
-              <SelectItem value="HDA">Hire Date - Ascending</SelectItem>
-              <SelectItem value="HDD">Hire Date - Descending</SelectItem>
+              <SelectItem value="FA">Files- Ascending</SelectItem>
+              <SelectItem value="FD">Files - Descending</SelectItem>
+              <SelectItem value="AA">Age - Ascending</SelectItem>
+              <SelectItem value="AD">Age - Descending</SelectItem>
             </SelectContent>
           </Select>
-
+          <AdvancedDoctorsFilters
+              onClose={() => setAdvancedModalOpen(false)}
+              isOpen={advancedModalOpen}
+              setAdvancedFilterOptions={setAdvancedFilterOptions}
+          />
         </div>
       </div>
   )
 }
 
-const TechniciansOverview = ({technicians}) => {
+const DoctorsOverview = ({doctorsStats}) => {
+
+
+  const specialities = {
+    'Cardiology' : 'Cardiology' ,
+    'Neurology' : 'Neurology' ,
+    'Gynecology' : 'Gynecology' ,
+    'Dermatology' : 'Dermatology' ,
+    'Pediatrics' : 'Pediatrics' ,
+    'GeneralPractice' : 'General Practice' ,
+  }
+
   return (
       <div className='grid grid-cols-4 gap-5 w-full'>
-        <OverviewCard title='Total Patients' Icon={Users} description={5} background={'bg-blue-500/30'}  button={'text-blue-500'}/>
-        <OverviewCard title='Available' Icon={CircleCheckBig} description={5} background={'bg-green-500/20'} button={'text-green-500'}/>
-        <OverviewCard title='Busy' Icon={Clock} description={5} background={'bg-yellow-500/20'} button={'text-yellow-500'}/>
-        <OverviewCard title='On Leave' Icon={CalendarOff} description={5} background={'bg-red-500/20'} button={'text-red-500'}/>
+        <OverviewCard title='Speciality' subtitle={`${specialities[doctorsStats.mostCommonSpeciality]} ${doctorsStats.mostCommonSpecPourcentage}%`}  Icon={Microscope} description={'Most Common'} color={'red'}/>
+        <OverviewCard title='Average Age' Icon={Calendar} subtitle={doctorsStats.averageAge} description={'years old'}  color={'blue'}/>
+        <OverviewCard title='Gender Ratio' Icon={Users} subtitle={`${doctorsStats.genderRatioMale}% / ${doctorsStats.genderRatioFemale}%`} description={'Male • Female'} color={'purple'} />
+        <OverviewCard title='New Doctors' Icon={TrendingUp} description={'this month'} subtitle={`+ ${doctorsStats.doctorsThisMonth}`} color={'emerald'}/>
       </div>
   )
 }
 
-const TechnicianCard = ({technician  ,role , onView , onEdit}) => {
-  const [actionsDropDown , setActionsDropDown] = useState(false);
-  const dropDownRef = useRef();
+const DoctorCard = ({doctor  ,role , onView , onEdit}) => {
 
-  const technicianStatusStyles = {
-    'AVAILABLE': 'bg-green-100 text-green-800 border-green-200',
-    'BUSY': 'bg-yellow-100 text-yellow-800 border-yellow-200',
-    'ON_LEAVE': 'bg-red-100 text-red-800 border-red-200',
+  const [showPasswordModal , setShowPasswordModal] = useState(false);
+
+  const specialities = {
+    'Cardiology' : 'Cardiology' ,
+    'Neurology' : 'Neurology' ,
+    'Gynecology' : 'Gynecology' ,
+    'Dermatology' : 'Dermatology' ,
+    'Pediatrics' : 'Pediatrics' ,
+    'GeneralPractice' : 'General Practice' ,
   }
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropDownRef.current && !dropDownRef.current.contains(event.target)) {
-        setActionsDropDown(false);
-      }
-    };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
+  const calculateAge = (birthDate) => {
+    const today = new Date()
+    const birth = new Date(birthDate)
+    let age = today.getFullYear() - birth.getFullYear()
+    const monthDiff = today.getMonth() - birth.getMonth()
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--
+    }
+    return age
+  }
 
-  const roleStyles = {
-    'SUPERUSER' : {
-      style : 'bg-red-100 text-red-800 border-red-200',
-      iconStyle : 'text-red-500'
-    } ,
-    'SUPERVISOR' : {
-      style : 'bg-blue-100 text-blue-800 border-blue-200',
-      iconStyle : 'text-red-500',
-    },
-    'TECHNICIAN' : {
-      style : 'bg-green-100 text-green-800 border-green-200',
-      iconStyle : 'text-green-500',
+  const age = calculateAge(doctor.birthDate)
+
+  // Format date for display
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    })
+  }
+
+  const handleDeleteDoctor = async () => {
+    try{
+      await deleteDoctor(doctor.id);
+      toast.success("doctor successfully deleted");
+    }catch (e) {
+      console.log("error deleting doctor : " + e);
+      throw new Error(e);
     }
   }
 
-
   return (
-      <div className='p-6 bg-white border-[1px] border-gray-300 rounded-lg relative'>
-        <div className='flex flex-col items-start justify-start '>
-          <div className='flex flex-col items-start justify-start gap-2'>
-            <div className='flex items-center justify-center gap-3'>
-              <p className='p-3 h-12 w-12 flex items-center justify-center text-lg text-white rounded-full bg-main-green font-bold'>{getInitials(technician.firstName.concat(" ").concat(technician.lastName))}</p>
-              <div className='flex flex-col items-start justify-center'>
-                <p className='font-bold text-lg '>{technician.firstName.concat(" ").concat(technician.lastName)}</p>
+      <Card className="w-full ">
+        <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-4">
+          <div className="flex items-start gap-4">
+            <Avatar className="h-12 w-12 bg-emerald-500 text-white">
+              <AvatarFallback className="bg-emerald-500 text-white font-semibold">{getInitials(doctor.firstName.concat(" ").concat(doctor.lastName))}</AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col gap-2">
+              <h3 className="text-lg font-semibold text-foreground">
+                {doctor.firstName} {doctor.lastName}
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="secondary" className="text-xs">
+                  {doctor.gender}
+                </Badge>
+                <Badge variant="outline" className="text-xs">
+                  {age} years old
+                </Badge>
               </div>
             </div>
-            <div className='flex items-center justify-start gap-2'>
-              {technician.technicianStatus === 'AVAILABLE' && (
-                  <>
-                    <CircleCheckBig className='text-main-green w-5 h-5'/>
-                    <p className={`border-[1px] px-2 py-1 rounded-full text-xs font-semibold ${technicianStatusStyles[technician.technicianStatus]}`}>Available</p>
-                  </>
-              )}
-              {technician.technicianStatus === 'BUSY' && (
-                  <>
-                    <Clock className='text-yellow-500 w-5 h-5'/>
-                    <p className={`border-[1px] px-2 py-1 rounded-full text-xs font-semibold ${technicianStatusStyles[technician.technicianStatus]}`}>Busy</p>
-                  </>
-              )}
-              {technician.technicianStatus === 'ON_LEAVE' && (
-                  <>
-                    <CalendarOff className='text-red-500 w-5 h-5'/>
-                    <p className={`border-[1px] px-2 py-1 rounded-full text-xs ${technicianStatusStyles[technician.technicianStatus]}`}>On
-                      Leave</p>
-                  </>
-              )}
-              <p className={`text-xs rounded-full font-semibold border-[1px] px-2 py-1  ${roleStyles[technician.role].style}`}>{formatLabel(technician.role)}</p>
-            </div>
           </div>
-          <div className='flex flex-col gap-2 '>
-            <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setActionsDropDown(!actionsDropDown);
-                }}
-                className="cursor-pointer"
-            >
-              <MoreHorizontal className='text-black absolute top-9 right-5'/>
-            </button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon"  className="h-8 w-8 cursor-pointer">
+                <MoreVertical className="h-4 w-4" />
+                <span className="sr-only">Open menu</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem>
+                <button
+                    onClick={() => onView()}
+                    className=" flex items-center gap-2 w-full hover:bg-gray-100 cursor-pointer rounded-md transition-colors">
+                  <Eye className="w-5 h-5 text-black"/>
+                  <p className="font-regular text-sm">View Details</p>
+                </button>
+              </DropdownMenuItem>
 
-            {actionsDropDown && (
-                <div
-                    ref={dropDownRef}
-                    className="absolute p-1 z-50 -right-12 shadow-xl top-12 min-w-50 bg-white border border-gray-300 rounded-lg flex flex-col items-start dropdown-animate-down"
-                >
-                  <button
-                      onClick={() => {
-                        onView();
-                        setActionsDropDown(false);
-                      }}
-                      className="flex items-center gap-5 p-2 w-full hover:bg-gray-100 cursor-pointer rounded-md transition-colors">
-                    <Eye className="w-5 h-5 text-black"/>
-                    <p className="font-medium text-sm">View Details</p>
-                  </button>
-                  {(role === "SUPERUSER" || role === "SUPERVISOR") && (
+                    <DropdownMenuItem>
                       <button
-                          onClick={() => {
-                            setActionsDropDown(false);
-                            onEdit();
-                          }}
-                          className="flex items-center gap-5 p-2 w-full hover:bg-gray-100 cursor-pointer rounded-md transition-colors">
+                          onClick={() => onEdit()}
+                          className=" flex items-center gap-2 w-full hover:bg-gray-100 cursor-pointer rounded-md transition-colors">
                         <SquarePen className="w-5 h-5 text-black"/>
-                        <p className="font-medium text-sm">Edit Profile</p>
+                        <p className="font-regular text-sm">Edit Doctor</p>
                       </button>
-                  )}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <button
+                          onClick={() => setShowPasswordModal(true)}
+                          className=" flex items-center gap-2 w-full hover:bg-gray-100 cursor-pointer rounded-md transition-colors">
+                        <Trash className="w-5 h-5 text-red-500"/>
+                        <p className="font-regular text-sm text-red-500">Delete Doctor</p>
+                      </button>
+                    </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </CardHeader>
+
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Phone className="h-4 w-4"/>
+              <span>{doctor.phoneNumber}</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Mail className="h-4 w-4" />
+              <span>{doctor.email}</span>
+            </div>
+          </div>
+
+          <div className="border-t border-border pt-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Microscope className="h-4 w-4" />
+                  <span>Speciality</span>
                 </div>
-            )}
-          </div>
-
-          <div className='flex flex-col items-start justify-start gap-2 mt-5'>
-            <div className='flex gap-3 items-start justify-start'>
-              <Phone className='w-5 h-5 text-gray-400'/>
-              <p className='font-regular text-black text-sm'>{technician.phoneNumber}</p>
-            </div>
-            <div className='flex gap-3 items-start justify-start'>
-              <Mail className='w-5 h-5 text-gray-400'/>
-              <p className='font-regular text-black text-sm'>{technician.email}</p>
-            </div>
-          </div>
-
-          <hr className='border-t-[1px] border-gray-300 w-full mt-5 mb-5'/>
-
-          <div className='w-full grid grid-cols-2 gap-4 '>
-            <div className='flex flex-col items-start justify-start w-full rounded-lg'>
-              <p className='text-gray-500 text-sm'>Completed</p>
-              <div className='flex items-center justify-start gap-2'>
-                <ListCheck className='w-5 h-5 text-main-green'/>
-                <p className='text-black text-sm font-semibold'>{technician.interventionsCompleted || 0}</p>
+                <p className="text-sm font-medium text-foreground">{specialities[doctor.speciality]}</p>
               </div>
-            </div>
-            <div  className='flex flex-col items-start justify-start w-full rounded-lg'>
-              <p className='text-gray-500 text-sm'>Assigned</p>
-              <div className='flex items-center justify-start gap-2'>
-                <Pin className='w-5 h-5 text-yellow-500'/>
-                <p className='text-black text-sm font-semibold'>{technician.interventionsAssigned.length}</p>
-              </div>
-            </div>
-            <div  className='flex flex-col items-start justify-start w-full rounded-lg'>
-              <p className='text-gray-500 text-sm'>Hire Date</p>
-              <div className='flex items-center justify-center gap-2'>
-                <BriefcaseIcon className='w-5 h-5 text-red-500'/>
-                <p className='text-black text-sm font-semibold'>{technician.hireDate}</p>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Calendar className="h-3.5 w-3.5" />
+                  <span>Birth Date</span>
+                </div>
+                <p className="text-sm font-medium text-foreground">{formatDate(doctor.birthDate)}</p>
               </div>
             </div>
           </div>
 
-
-        </div>
-      </div>
+          <div className="border-t border-border pt-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <User2 className="h-3.5 w-3.5" />
+                <span>Doctor Since</span>
+              </div>
+              <p className="text-sm font-medium text-foreground">{formatDate(doctor.createdAt)}</p>
+            </div>
+          </div>
+        </CardContent>
+        <PasswordConfirmationModal
+            toDelete={true}
+            onSuccess={handleDeleteDoctor}
+            isOpen={showPasswordModal}
+            onClose={() => setShowPasswordModal(false)}
+        />
+      </Card>
   )
 }
 
 
-const Doctors = () => {
-  const [technicians, setTechnicians] = useState([]);
-  const [interventionTypes , setInterventionTypes] = useState([])
+const Doctor = () => {
+  const [doctors, setDoctors] = useState([]);
+  const [doctorStats , setDoctorStats] = useState(null);
   const [filterOptions, setFilterOptions] = useState({
-    searchTerm: "",
-    selectedStatus: "all",
-    sortType: "newest"
+    gender : "",
+    speciality : "",
+    sorting : "newest",
+    name : ""
   });
+
+  const [advancedFilterOptions, setAdvancedFilterOptions] = useState({
+    page : 1,
+    genders : [],
+    specialities : [],
+    name : ""
+  });
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const {user} = useAuth();
-  const role = user?.roles?.split("_")[1];
+  const role = user?.role;
 
 
   const [modalState, setModalState] = useState({
-    userRole : null,
-    technicianId: null,
+    userRole : "doctor",
+    userId : null,
     isOpen: false,
     viewOnly: false,
     isEdit: false
   })
 
-  const handleOpenModal = (technicianId = null, userRole = null , viewOnly = false, isEdit = false) => {
+  const handleOpenModal = (userId = null , viewOnly = false, isEdit = false) => {
     setModalState({
-      userRole,
+      userRole : "doctor",
       isOpen: true,
       viewOnly,
       isEdit,
-      technicianId
+      userId
     });
   }
 
@@ -302,63 +434,52 @@ const Doctors = () => {
   };
 
 
-  const filteredTechnicians = useMemo(() => {
-    return technicians
-        .filter((technician) => {
-          const matchesSearchTerm =
-              technician.firstName.toLowerCase().includes(filterOptions.searchTerm.toLowerCase()) ||
-              technician.lastName.toLowerCase().includes(filterOptions.searchTerm.toLowerCase()) ||
-              technician.email.toLowerCase().includes(filterOptions.searchTerm.toLowerCase()) ||
-              technician.phoneNumber.toLowerCase().includes(filterOptions.searchTerm.toLowerCase());
+  const filteredDoctors = useMemo(() => {
+    return doctors
+        .filter((doctor) => {
+          const matchesName =
+              doctor.firstName.toLowerCase().includes(filterOptions.name.toLowerCase()) ||
+              doctor.lastName.toLowerCase().includes(filterOptions.name.toLowerCase()) ||
+              doctor.email.toLowerCase().includes(filterOptions.name.toLowerCase()) ||
+              doctor.phoneNumber.toLowerCase().includes(filterOptions.name.toLowerCase());
 
-          const matchesStatus =
-              filterOptions.selectedStatus === "all" || technician.technicianStatus === filterOptions.selectedStatus;
 
-          return matchesStatus && matchesSearchTerm;
+
+          const matchesGender =
+              filterOptions.gender === '' || doctor.gender === filterOptions.gender;
+
+          const matchesSpeciality = filterOptions.speciality === '' || doctor.speciality === filterOptions.speciality;
+
+          return matchesGender && matchesName && matchesSpeciality;
         })
         .sort((a, b) => {
-          switch (filterOptions.sortType) {
+          switch (filterOptions.sorting) {
             case "newest":
               return new Date(b.createdAt) - new Date(a.createdAt);
             case "oldest":
               return new Date(a.createdAt) - new Date(b.createdAt);
-            case "ICA":
-              return a.interventionsCompleted - b.interventionsCompleted;
-            case "ICD":
-              return b.interventionsCompleted - a.interventionsCompleted;
-            case "IAA":
-              return a.interventionsAssigned.length - b.interventionsAssigned.length;
-            case "IAD":
-              return b.interventionsAssigned.length - a.interventionsAssigned.length;
-            case "HDA":
-              return new Date(a.hireDate) - new Date(b.hireDate);
-            case "HDD":
-              return new Date(b.hireDate) - new Date(a.hireDate);
+            case "AA":
+              return new Date(b.birthDate) - new Date(a.birthDate);
+            case "AD":
+              return new Date(a.birthDate) - new Date(b.birthDate);
             default:
               return 0;
           }
         });
-  }, [technicians, filterOptions]);
+  }, [doctors, filterOptions]);
 
-  const fetchTechniciansAndInterventionTypes = async () => {
+  const fetchDoctorsAndStats = async () => {
     try{
       setLoading(true);
-      let usersCall;
-      if (role === "SUPERVISOR") {
-        usersCall =  getTechnicians;
-      } else if (role === "SUPERUSER") {
-        usersCall = getTechniciansSupervisors;
-      } else {
-        throw new Error("Invalid role");
-      }
-      const [techniciansResponse , interventionTypesResponse] = await axios.all([
-        usersCall() , getInterventionTypes()
+
+      const [doctorsResponse , doctorStatsResponse] = await axios.all([
+        getDoctors(advancedFilterOptions) , getDoctorStats()
       ]);
-      setInterventionTypes(interventionTypesResponse.data);
-      setTechnicians(techniciansResponse.data);
+      setDoctorStats(doctorStatsResponse.data);
+      setDoctors(doctorsResponse.data.items);
     }catch (e) {
-      console.error("Error fetching technicians:", e);
-      setError(`Error fetching technicians: ${e}`);
+      console.error("Error fetching doctors:", e);
+      setError(`Error fetching doctors: ${e}`);
     }finally {
       setLoading(false);
     }
@@ -367,72 +488,93 @@ const Doctors = () => {
 
   useEffect(() => {
     if(!user) return;
-    fetchTechniciansAndInterventionTypes();
-  }, [user]);
+    fetchDoctorsAndStats();
+  }, [user , advancedFilterOptions]);
 
 
+  const handleResetAllFilters = () => {
+    setFilterOptions({
+      gender: "",
+      speciality: "",
+      sorting: "newest",
+      name: ""
+    });
 
+    setAdvancedFilterOptions({
+      page : 1,
+      name: '',
+      genders: [],
+      specialities: [],
+    });
+  }
 
 
   return (
-    <div className='flex flex-col justify-start items-start  h-full gap-6 w-full'>
+      <div className='flex flex-col justify-start items-start  h-full gap-6 w-full'>
         {loading ? (
             <div className='flex items-center justify-center w-full py-30'>
-                <span className="loading loading-spinner custom-spinner loading-2xl text-main-green "></span>
+              <span className="loading loading-spinner custom-spinner loading-2xl text-main-green "></span>
             </div>
         ) : error != null ? (
             <div className='flex items-center flex-col justify-center w-full py-30'>
-                <ServerCrash className="w-16 h-16 text-red-600 mb-4"/>
-                <h2 className="text-2xl font-bold text-red-700 mb-2">Server Error</h2>
-                <p className="text-red-600 text-center">
-                    Oops! Something went wrong on our side. Please try refreshing the page or come back later.
-                </p>
+              <ServerCrash className="w-16 h-16 text-red-600 mb-4"/>
+              <h2 className="text-2xl font-bold text-red-700 mb-2">Server Error</h2>
+              <p className="text-red-600 text-center">
+                Oops! Something went wrong on our side. Please try refreshing the page or come back later.
+              </p>
             </div>
         ) : (
             <>
-              {(role === "SUPERUSER" || role === "SUPERVISOR") && (
+              {(role === "Manager") && (
                   <button
                       onClick={() => handleOpenModal(null, false, false)}
-                      className='flex items-center gap-5 self-end justify-center px-4 py-2 rounded-md transition-all duration-200 cursor-pointer bg-main-green/90 hover:bg-main-green'>
-                    <Plus className='text-white'/>
-                    <p className='text-md text-white font-medium'>Create Technician</p>
+                      className='flex items-center gap-2 self-end justify-center px-4 py-2 rounded-md transition-all duration-200 cursor-pointer bg-main-green/90 hover:bg-main-green'>
+                    <UserPlus className='text-white'/>
+                    <p className='text-md text-white font-medium'>Create Doctor</p>
                   </button>
               )}
-              <TechniciansOverview technicians={technicians}/>
-              <SearchBarFilter filterOptions={filterOptions} setFilterOptions={setFilterOptions}/>
+              {doctorStats && <DoctorsOverview doctorsStats={doctorStats}/>}
 
-              {filteredTechnicians.length === 0 ? (
+              <SearchBarFilter
+                  filterOptions={filterOptions}
+                  setFilterOptions={setFilterOptions}
+                  advancedFilterOptions={advancedFilterOptions}
+                  setAdvancedFilterOptions={setAdvancedFilterOptions}
+                  resetAllFilters={handleResetAllFilters}
+              />
+
+              {filteredDoctors.length === 0 ? (
                   <div className='flex flex-col items-center justify-center w-full py-30'>
                     <UserX className="w-16 h-16 text-red-600 mb-4"/>
-                    <h2 className="text-2xl font-bold text-red-700 mb-2">No Patients</h2>
+                      <h2 className="text-2xl font-bold text-red-700 mb-2">No Doctors</h2>
                     <p className="text-red-600 text-center">
-                      Create a technician to get started or try adjusting your filters.
+                      Create a doctor to get started or try adjusting your filters.
                     </p>
                   </div>
               ) : (
                   <div className='grid grid-cols-3 gap-5 w-full'>
-                    {filteredTechnicians.map((tech) => (
-                        <TechnicianCard
-                            technician={tech}
+                    {filteredDoctors.map((patient) => (
+                        <DoctorCard
+                            doctor={patient}
                             role={role}
-                            onView={() => handleOpenModal(tech.id, tech.role, true, false)}
-                            onEdit={() => handleOpenModal(tech.id, tech.role, false, true)}
+                            onView={() => handleOpenModal(patient.id , true , false)}
+                            onEdit={() => handleOpenModal(patient.id, false, true)}
                         />
                     ))}
                   </div>
               )}
             </>
         )}
-      <UserViewUpdate
-          userRole={modalState.userRole}
-          viewOnly={modalState.viewOnly}
-          isEdit={modalState.isEdit}
-          isOpen={modalState.isOpen}
-          onClose={handleCloseModal}
-          technicianId={modalState.technicianId}
-      />
-    </div>
+        <PatientDoctorViewUpdate
+            userRole={modalState.userRole}
+            viewOnly={modalState.viewOnly}
+            isEdit={modalState.isEdit}
+            isOpen={modalState.isOpen}
+            onClose={handleCloseModal}
+            userId={modalState.userId}
+        />
+      </div>
   )
 }
 
-export default Doctors;
+export default Doctor
