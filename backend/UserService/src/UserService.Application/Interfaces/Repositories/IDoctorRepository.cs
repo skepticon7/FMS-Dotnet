@@ -1,4 +1,5 @@
-﻿using UserService.Application.Features.Doctors.Queries.GetDoctors;
+﻿using UserService.Application.DTOs;
+using UserService.Application.Features.Doctors.Queries.GetDoctors;
 using UserService.Domain.Entities;
 
 namespace UserService.Application.Interfaces;
@@ -15,4 +16,5 @@ public interface IDoctorRepository
 
     Task<(IReadOnlyList<Doctor> items, int totalCount)> GetDoctorsAsync(GetDoctorsQuery query , CancellationToken cancellationToken = default);
 
+    Task<DoctorStatsDTO> GetDoctorsStatsAsync(CancellationToken cancellationToken = default);
 }

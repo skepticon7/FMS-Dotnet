@@ -12,9 +12,9 @@ public interface IPatientRepository
     Task<Patient?> GetPatientByEmailAsync(string email , CancellationToken cancellationToken = default);
     Task<Patient> DeletePatientAsync(Patient patient , CancellationToken cancellationToken = default);
 
-    Task<(IReadOnlyList<Patient>, int totalCount)> GetPatientsAsync(GetPatientsQuery query,
+    Task<(IReadOnlyList<Patient>, int totalCount)> GetPatientsAsync(List<long>? patientIds , GetPatientsQuery query,
         CancellationToken cancellationToken = default);
     
-    Task<PatientStatsDTO> GetPatientsStats(CancellationToken cancellationToken = default);
+    Task<PatientStatsDTO> GetPatientsStats(List<long>? patientIds , CancellationToken cancellationToken = default);
 
 }
