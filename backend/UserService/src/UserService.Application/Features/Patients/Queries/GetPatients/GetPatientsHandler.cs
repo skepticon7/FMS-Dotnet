@@ -14,7 +14,7 @@ public class GetPatientsHandler(
 {
     public async Task<PagedResult<PatientDTO>> Handle(GetPatientsQuery request, CancellationToken cancellationToken)
     {
-        var (patients, totalCount) = await _patientRepository.GetPatientsAsync(request, cancellationToken);
+        var (patients, totalCount) = await _patientRepository.GetPatientsAsync(null ,request, cancellationToken);
         return new PagedResult<PatientDTO>()
         {
             Items = _mapper.Map<List<PatientDTO>>(patients),

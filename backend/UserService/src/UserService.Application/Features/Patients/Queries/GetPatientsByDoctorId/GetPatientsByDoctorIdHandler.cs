@@ -33,6 +33,7 @@ public class GetPatientsByDoctorIdHandler(
             };
         
         var (patients , totalCount) = await _patientRepository.GetPatientsAsync(
+            patientIds,
             new GetPatientsQuery
             {
                 Page = request.Page,
@@ -44,7 +45,7 @@ public class GetPatientsByDoctorIdHandler(
 
         return new PagedResult<PatientDTO>
         {
-            Items = _mapper.Map<List<PatientDTO>>(patients),
+            Items = [],
             TotalCount = totalCount
         };
 

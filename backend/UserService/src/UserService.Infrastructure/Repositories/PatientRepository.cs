@@ -28,27 +28,32 @@ public class PatientRepository(UserDbContext _context) : IPatientRepository
 
     public async Task<Patient?> GetPatientByIdAsync(long id , CancellationToken cancellationToken)
     {
-        return await _context.Patients.FindAsync(id, cancellationToken);
+        return await _context.Patients.FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted, cancellationToken);
     }
 
     public async Task<Patient?> GetPatientByEmailAsync(string email , CancellationToken cancellationToken)
     {
-        return await _context.Patients.FirstOrDefaultAsync(p => p.Email == email, cancellationToken: cancellationToken);
+        return await _context.Patients.FirstOrDefaultAsync(p => p.Email == email && !p.IsDeleted, cancellationToken: cancellationToken);
     }
 
     public async Task<Patient> DeletePatientAsync(Patient patient , CancellationToken cancellationToken)
     {
-        _context.Patients.Remove(patient);
+        patient.IsDeleted = true;
+        _context.Patients.Update(patient);
         await _context.SaveChangesAsync(cancellationToken);
         return patient;
     }
 
     public async Task<(IReadOnlyList<Patient>, int totalCount)> GetPatientsAsync(
+        List<long>? patientIds ,
         GetPatientsQuery query,
         CancellationToken cancellationToken)
     {
+        
+        
         IQueryable<Patient> q = _context.Patients
-            .AsNoTracking();
+            .AsNoTracking().Where(p => !p.IsDeleted &&
+                                       (patientIds == null || !patientIds.Any() || patientIds.Contains(p.Id)));
         
         if (query.Name != null)
         {
@@ -82,9 +87,11 @@ public class PatientRepository(UserDbContext _context) : IPatientRepository
         return (items, totalCount);
     }
 
-    public async Task<PatientStatsDTO> GetPatientsStats(CancellationToken cancellationToken)
+    public async Task<PatientStatsDTO> GetPatientsStats(List<long>? patientIds , CancellationToken cancellationToken)
     {
-        var patients = _context.Patients.AsNoTracking();
+        var patients = _context.Patients.AsNoTracking()
+            .Where(p => !p.IsDeleted &&
+                        (patientIds == null || !patientIds.Any() || patientIds.Contains(p.Id)));
         
         var totalPatients = await patients.CountAsync(cancellationToken);
 
