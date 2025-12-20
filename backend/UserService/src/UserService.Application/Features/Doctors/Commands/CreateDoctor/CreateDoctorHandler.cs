@@ -12,6 +12,7 @@ using UserService.Application.Common.Security;
 using UserService.Application.DTOs;
 using UserService.Application.Features.Doctors.Queries.GetDoctorById;
 using UserService.Application.Features.Doctors.Queries.GetDoctors;
+using UserService.Application.Features.Doctors.Queries.GetDoctorsStats;
 using UserService.Application.Interfaces;
 using UserService.Domain.Entities;
 using UserService.Domain.Enums;
@@ -52,6 +53,7 @@ public class CreateDoctorHandler(
         var createdDoctor = await doctorRepository.CreateDoctorAsync(doctor);
 
         await _cacheService.RemoveCacheByPrefix(nameof(GetDoctorsQuery), cancellationToken);
+        await _cacheService.RemoveCacheByPrefix(nameof(GetDoctorsStatsQuery), cancellationToken);
 
         return mapper.Map<DoctorDTO>(createdDoctor);
     }

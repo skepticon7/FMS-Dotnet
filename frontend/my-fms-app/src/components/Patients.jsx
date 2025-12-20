@@ -30,6 +30,7 @@ import {
   Calendar,
   FunnelPlus,
   TrendingUp,
+    Trash,
   Droplet,
   User2, MoreVertical, X, UserPlus
 } from "lucide-react";
@@ -40,7 +41,7 @@ import {
   getPatients,
   getDoctors,
   getTechniciansSupervisors,
-  getPatientStats
+  getPatientStats, deletePatient
 } from "../services/api.js";
 import OverviewCard from "../shared/OverviewCard.jsx";
 import {getInitials} from "../Utils/getInitials.js";
@@ -50,6 +51,8 @@ import {Input} from "@/components/ui/input.js";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.js";
 import AdvancedFilters from "@/components/AdvancedFilters.jsx";
 import {AdvancedPatientsFilters, PatientDoctorViewUpdate} from "@/components/index.js";
+import PasswordConfirmationModal from "@/shared/PasswordConfirmationModal.jsx";
+import toast from "react-hot-toast";
 
 
 const SearchBarFilter = ({filterOptions , setFilterOptions , advancedFilterOptions , setAdvancedFilterOptions, resetAllFilters}) => {
@@ -245,8 +248,7 @@ const PatientsOverview = ({patientsStats}) => {
 }
 
 const PatientCard = ({patient  ,role , onView , onEdit}) => {
-
-
+  const [showPasswordModal , setShowPasswordModal] = useState(false);
   const BloodTypes = {
     'A_POSITIVE' : 'A+' ,
     'A_NEGATIVE' : 'A-' ,
@@ -277,6 +279,16 @@ const PatientCard = ({patient  ,role , onView , onEdit}) => {
       month: "short",
       day: "numeric",
     })
+  }
+
+  const handleDeletePatient = async () => {
+    try{
+      await deletePatient(patient.id);
+      toast.success("patient successfully deleted");
+    }catch (e) {
+      console.log("error deleting patient : " + e);
+      throw new Error(e);
+    }
   }
 
   return (
@@ -317,14 +329,24 @@ const PatientCard = ({patient  ,role , onView , onEdit}) => {
                 </button>
               </DropdownMenuItem>
               {role === 'Manager' && (
-                  <DropdownMenuItem>
-                    <button
-                      onClick={() => onEdit()}
-                      className=" flex items-center gap-2 w-full hover:bg-gray-100 cursor-pointer rounded-md transition-colors">
-                    <SquarePen className="w-5 h-5 text-black"/>
-                    <p className="font-regular text-sm">Edit Patient</p>
-                  </button>
-                  </DropdownMenuItem>
+                  <>
+                    <DropdownMenuItem>
+                      <button
+                          onClick={() => onEdit()}
+                          className=" flex items-center gap-2 w-full hover:bg-gray-100 cursor-pointer rounded-md transition-colors">
+                        <SquarePen className="w-5 h-5 text-black"/>
+                        <p className="font-regular text-sm">Edit Patient</p>
+                      </button>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <button
+                          onClick={() => setShowPasswordModal(true)}
+                          className=" flex items-center gap-2 w-full hover:bg-gray-100 cursor-pointer rounded-md transition-colors">
+                        <Trash className="w-5 h-5 text-red-500"/>
+                        <p className="font-regular text-sm text-red-500">Delete Patient</p>
+                      </button>
+                    </DropdownMenuItem>
+                  </>
 
               )}
             </DropdownMenuContent>
@@ -372,6 +394,12 @@ const PatientCard = ({patient  ,role , onView , onEdit}) => {
             </div>
           </div>
         </CardContent>
+        <PasswordConfirmationModal
+          toDelete={true}
+          onSuccess={handleDeletePatient}
+          isOpen={showPasswordModal}
+          onClose={() => setShowPasswordModal(false)}
+        />
       </Card>
   )
 }
