@@ -32,6 +32,7 @@ namespace FileService.Application.Features.Files.Queries.GetFileById
             var cached = await _cache.GetStringAsync(cacheKey, cancellationToken);
             if (cached != null)
             {
+                Console.WriteLine($"[REDIS HIT] {cacheKey}");
                 return JsonSerializer.Deserialize<FileDto>(cached)!;
             }
             var file = await _context.FileEntries
