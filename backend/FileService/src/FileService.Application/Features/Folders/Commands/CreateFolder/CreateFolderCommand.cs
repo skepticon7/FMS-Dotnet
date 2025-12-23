@@ -2,6 +2,7 @@
 using FileService.Application.Common.Interfaces;
 using FileService.Domain.Entities;
 using Microsoft.Extensions.Caching.Distributed;
+using MassTransit;
 
 namespace FileService.Application.Features.Folders.Commands.CreateFolder
 {
@@ -19,13 +20,16 @@ namespace FileService.Application.Features.Folders.Commands.CreateFolder
     {
         private readonly IApplicationDbContext _context;
         private readonly IDistributedCache _cache;
+        private readonly IPublishEndpoint _publishEndpoint;
 
         public CreateFolderCommandHandler(
             IApplicationDbContext context,
-            IDistributedCache cache)
+            IDistributedCache cache,
+            IPublishEndpoint publishEndpoint)
         {
             _context = context;
             _cache = cache;
+            _publishEndpoint = publishEndpoint;
         }
 
         public async Task<Guid> Handle(
@@ -47,7 +51,14 @@ namespace FileService.Application.Features.Folders.Commands.CreateFolder
 
             // 🔥 Cache invalidation
             await InvalidateCaches(entity, cancellationToken);
-
+            await _publishEndpoint.Publish(
+                new CreateFolderCommand(
+                    Name: entity.Name,
+                    PatientId: entity.PatientId,
+                    DoctorId: entity.DoctorId,
+                    Type: entity.Type
+                  ), cancellationToken
+            );
             return entity.Id;
         }
 

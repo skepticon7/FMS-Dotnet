@@ -4,6 +4,7 @@ using FileService.Infrastructure.Storage;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using MassTransit;
 
 namespace FileService.Infrastructure
 {
@@ -21,6 +22,24 @@ namespace FileService.Infrastructure
                 provider.GetRequiredService<ApplicationDbContext>());
             services.AddScoped<IFileStorageService, LocalFileStorageService>();
             services.AddScoped<IAzureFileStorageService, AzureBlobStorageService>();
+            services.AddMassTransit(x =>
+            {
+                // If you had consumers (listeners) in this service, you would register them here:
+                // x.AddConsumer<MyFileCreatedConsumer>();
+
+                x.UsingRabbitMq((context, cfg) =>
+                {
+                    // Configure Host
+                    cfg.Host(configuration["RabbitMQ:HostName"] ?? "localhost", "/", h =>
+                    {
+                        h.Username(configuration["RabbitMQ:UserName"] ?? "guest");
+                        h.Password(configuration["RabbitMQ:Password"] ?? "guest");
+                    });
+
+                    // Automatically configure endpoints for any consumers registered above
+                    cfg.ConfigureEndpoints(context);
+                });
+            });
             return services;
         }
     }
