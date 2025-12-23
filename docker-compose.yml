@@ -72,6 +72,8 @@ services:
       RABBITMQ_DEFAULT_PASS: guest
     depends_on:
       - consul
+
+  
   
     
 #  users.api:

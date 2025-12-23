@@ -5,6 +5,7 @@ using Microsoft.Extensions.Caching.Distributed;
 using FileService.Application.Common.Interfaces;
 using FileService.Application.DTOs;
 using FileService.Application.Common.Exceptions;
+
 namespace FileService.Application.Features.Folders.Queries
 {
     // 1️⃣ The Query
@@ -16,6 +17,7 @@ namespace FileService.Application.Features.Folders.Queries
     {
         private readonly IApplicationDbContext _context;
         private readonly IDistributedCache _cache;
+        
 
         public GetFolderByIdQueryHandler(
             IApplicationDbContext context,
