@@ -1,11 +1,40 @@
 using FileService.Application;
-using FileService.Application.Common.Interfaces;
 using FileService.Infrastructure;
-using FileService.Infrastructure.Storage;
 using Steeltoe.Discovery.Consul;
-using Microsoft.Extensions.Caching.StackExchangeRedis;
 using FileService.Api.Middleware;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 var builder = WebApplication.CreateBuilder(args);
+var jwtSecret = builder.Configuration["JwtSettings:Secret"] ?? "super_secret_key_must_be_long_enough"; 
+
+builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+        
+            // Matches the "iss" in your token example
+            ValidIssuer = "user-service", 
+        
+            // Matches the "aud" in your token example
+            ValidAudience = "user-service-clients", 
+        
+            // The same secret key used by the User Service to sign the token
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
+        
+            // Optional: ClockSkew handles server time differences (default is 5 mins)
+            ClockSkew = TimeSpan.Zero 
+        };
+    });
 
 // 1. Add Services from other layers
 // This loads MediatR, AutoMapper, EF Core, FileStorage, etc.

@@ -1,3 +1,3 @@
 ﻿namespace Contracts.Users;
 
-public record GetPatientIdsByDoctorIdRequest(long Id);
+public record GetPatientIdsByDoctorIdRequest(long DoctorId);

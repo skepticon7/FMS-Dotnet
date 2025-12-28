@@ -14,7 +14,6 @@ public class ManagerController(IMediator mediator) : ControllerBase
 {
     private readonly IMediator _mediator = mediator;
     
-    [Authorize(Policy = "ManagerOnly")]
     [HttpPost("createManager")]
     public async Task<IActionResult> CreateManager([FromBody] CreateManagerCommand command)
     {

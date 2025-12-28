@@ -1,3 +1,3 @@
 ﻿namespace Contracts.Users;
 
-public record ValidateUsersResponse(bool DoctorExists , bool PatientExists , bool ManagerExists);
+public record ValidateUsersResponse(bool DoctorExists , bool PatientExists );

@@ -12,6 +12,6 @@ public class FileServiceClient(IRequestClient<GetPatientIdsByDoctorIdRequest> _c
         var response = await _client.GetResponse<GetPatientIdsByDoctorResponse>(
             new GetPatientIdsByDoctorIdRequest(doctorId)
         );
-        return response.Message.Ids;
+        return response.Message.PatientIds;
     }
 }

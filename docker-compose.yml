@@ -17,12 +17,11 @@ services:
     volumes:
       - consul-data:/consul/data
     command: >
-      agent 
-      -server 
-      -bootstrap 
-      -ui 
-      -client=0.0.0.0 
-      -hcl='server_rejoin_age_max = "8760h"'
+      agent
+      -server
+      -bootstrap-expect=1
+      -ui
+      -client=0.0.0.0
     
    
 
