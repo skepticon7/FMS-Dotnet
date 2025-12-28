@@ -492,6 +492,15 @@ export const getPatientStats = async () => {
     }
 }
 
+export const getPatientStatsByDoctorId = async (doctorId) => {
+    try {
+        const response = await axios.get(`${apiGateway}/user-service/api/patient/getPatientsStatsByDoctorId/${doctorId}` ,{...getAuthConfig()});
+        return response;
+    }catch (e) {
+        throw e;
+    }
+}
+
 export const getDoctorStats = async () => {
     try{
         const response = await axios.get(`${apiGateway}/user-service/api/doctor/getDoctorStats` ,{...getAuthConfig()});

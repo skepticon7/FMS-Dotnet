@@ -33,7 +33,7 @@ const OverviewCard = ({Icon , title , subtitle ,description , color}) => {
                 </div>
 
                 <div
-                    className={`size-10 rounded-lg flex items-center justify-center shrink-0`}
+                    className={`size-10 rounded-lg flex items-center justify-center shrink-0 ${styles.bg}`}
                 >
                     <Icon className={`size-5 ${styles.text}`} />
                 </div>
