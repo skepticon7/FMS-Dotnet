@@ -6,7 +6,6 @@ using UserService.Application.Common.Caching;
 using UserService.Application.Common.Security;
 using UserService.Application.Interfaces;
 using UserService.Application.Interfaces.Messaging;
-using UserService.Domain.Entities;
 using UserService.Infrastructure.Cache;
 using UserService.Infrastructure.Messaging.Clients;
 using UserService.Infrastructure.Repositories;
@@ -39,10 +38,11 @@ public static class DependencyInjection
                     h.Password(configuration["DefaultConnections:rabbitmq:Password"]!);
                 });
                 configurator.ConfigureEndpoints(context);
+                
             });
             
             busConfigurator.AddRequestClient<GetPatientIdsByDoctorIdRequest>();
-            
+            busConfigurator.SetDefaultRequestTimeout(TimeSpan.FromSeconds(3));
         });
         
         return services;

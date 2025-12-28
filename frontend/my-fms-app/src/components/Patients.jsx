@@ -41,7 +41,7 @@ import {
   getPatients,
   getDoctors,
   getTechniciansSupervisors,
-  getPatientStats, deletePatient
+  getPatientStats, deletePatient, getPatientsByDoctorId
 } from "../services/api.js";
 import OverviewCard from "../shared/OverviewCard.jsx";
 import {getInitials} from "../Utils/getInitials.js";
@@ -419,7 +419,6 @@ const Patients = () => {
     page : 1,
     genders : [],
     bloodTypes : [],
-    sorting : "newest",
     name : ""
   });
 
@@ -489,9 +488,23 @@ const Patients = () => {
   const fetchPatients = async () => {
     try{
       setLoading(true);
+      let fetchPatients;
+      switch (role) {
+        case "Manager":
+          console.log("here");
+          fetchPatients = () => getPatients(advancedFilterOptions);
+          break;
 
+        case "Doctor":
+          fetchPatients = () =>
+              getPatientsByDoctorId(advancedFilterOptions, user?.id);
+          break;
+
+        default:
+          throw new Error("Unknown role");
+      }
       const [patientsResponse , patientStatsResponse] = await axios.all([
-        getPatients(advancedFilterOptions) , getPatientStats()
+        fetchPatients() , getPatientStats()
       ]);
       setPatientsStats(patientStatsResponse.data);
       setPatients(patientsResponse.data.items);
