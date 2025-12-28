@@ -48,6 +48,11 @@ public class GetPatientsByDoctorIdHandler(
             }
             , cancellationToken);
 
+        foreach (var patient in patients)
+        {
+            Console.WriteLine("Patient id : " + patient.Id);
+        }
+        
         return new PagedResult<PatientDTO>
         {
             Items = _mapper.Map<List<PatientDTO>>(patients),

@@ -8,6 +8,7 @@ using UserService.Application.Features.Patients.Queries.GetPatientById;
 using UserService.Application.Features.Patients.Queries.GetPatients;
 using UserService.Application.Features.Patients.Queries.GetPatientsByDoctorId;
 using UserService.Application.Features.Patients.Queries.GetPatientsStats;
+using UserService.Application.Features.Patients.Queries.GetPatientsStatsByDoctorId;
 
 namespace UserService.Api.Controllers;
 
@@ -80,6 +81,13 @@ public class PatientController(IMediator _mediator) : ControllerBase
     {
         var stats = await _mediator.Send(new GetPatientsStatsQuery());
         return Ok(stats);
+    }
+
+    [HttpGet("1/{id}")]
+    [Authorize(Policy = "DoctorOrManager")]
+    public async Task<IActionResult> GetPatientsStatsByDoctorId(long id)
+    {
+        return Ok(await _mediator.Send(new GetPatientsStatsByDoctorIdQuery(id)));
     }
 
     [Authorize(Policy = "ManagerOnly")]

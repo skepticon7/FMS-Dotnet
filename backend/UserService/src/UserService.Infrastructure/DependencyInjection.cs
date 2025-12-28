@@ -39,10 +39,28 @@ public static class DependencyInjection
                 });
                 configurator.ConfigureEndpoints(context);
                 
+                configurator.UseMessageRetry(r =>
+                {
+                    r.Exponential(
+                        retryLimit: 3,
+                        minInterval: TimeSpan.FromSeconds(1),
+                        maxInterval: TimeSpan.FromSeconds(10),
+                        intervalDelta: TimeSpan.FromSeconds(2)
+                    );
+                });
+                
+                configurator.UseCircuitBreaker(cb =>
+                {
+                    cb.TrackingPeriod = TimeSpan.FromMinutes(1);
+                    cb.TripThreshold = 15;
+                    cb.ActiveThreshold = 10;
+                    cb.ResetInterval = TimeSpan.FromMinutes(2);
+                });
+                
             });
             
             busConfigurator.AddRequestClient<GetPatientIdsByDoctorIdRequest>();
-            busConfigurator.SetDefaultRequestTimeout(TimeSpan.FromSeconds(3));
+            busConfigurator.SetDefaultRequestTimeout(TimeSpan.FromSeconds(10));
         });
         
         return services;

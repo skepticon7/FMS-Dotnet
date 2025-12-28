@@ -13,8 +13,8 @@ namespace FileService.Application.Features.Files.Commands.UploadFile
     public record UploadFileCommand(
         Guid FolderId,
         IFormFile File,
-        MedicalFileType FileType, // e.g. MRI, Prescription
-        string UploadedBy,        // Usually from User Claims
+        MedicalFileType FileType, 
+        string UploadedBy,       
         string? Notes
     ) : IRequest<Guid>;
 
