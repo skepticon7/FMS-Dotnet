@@ -32,7 +32,7 @@ public class PatientController(IMediator _mediator) : ControllerBase
         return Ok(patient);
     }
 
-    [Authorize(Policy = "ManagerOnly")]
+    [Authorize(Policy = "DoctorOrManager")]
     [HttpGet("getPatients")]
     public async Task<IActionResult> GetPatients(
         [FromQuery] int page = 1,
@@ -61,6 +61,7 @@ public class PatientController(IMediator _mediator) : ControllerBase
         [FromQuery] List<string> genders = null
     )
     {
+        Console.WriteLine("hello from get patients by doctor");
         return Ok(await _mediator.Send(
             new GetPatientsByDoctorIdQuery
             {
@@ -74,7 +75,7 @@ public class PatientController(IMediator _mediator) : ControllerBase
     }
     
     [HttpGet("getPatientsStats")]
-    [Authorize(Policy = "ManagerOnly")]
+    [Authorize(Policy = "DoctorOrManager")]
     public async Task<IActionResult> GetPatientsStats()
     {
         var stats = await _mediator.Send(new GetPatientsStatsQuery());
