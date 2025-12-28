@@ -2,49 +2,63 @@
 using System.Text.Json;
 using FileService.Application.Common.Exceptions;
 
-namespace FileService.Api.Middleware
+namespace FileService.Api.Middleware;
+
+public class ExceptionHandlingMiddleware
 {
-    public class ExceptionHandlingMiddleware
+    private readonly RequestDelegate _next;
+
+    public ExceptionHandlingMiddleware(RequestDelegate next)
     {
-        private readonly RequestDelegate _next;
+        _next = next;
+    }
 
-        public ExceptionHandlingMiddleware(RequestDelegate next)
+    public async Task Invoke(HttpContext context)
+    {
+        try
         {
-            _next = next;
+            await _next(context);
         }
-
-        public async Task Invoke(HttpContext context)
+        catch (ValidationException ex)
         {
-            try
+            context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+            context.Response.ContentType = "application/json";
+
+            var response = new
             {
-                await _next(context);
-            }
-            catch (NotFoundException ex)
+                type = "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+                title = "One or more validation errors occurred.",
+                status = 400,
+                errors = ex.Errors
+            };
+
+            await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+        }
+        catch (NotFoundException ex)
+        {
+            context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+            context.Response.ContentType = "application/json";
+
+            var response = new
             {
-                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                context.Response.ContentType = "application/json";
+                status = 404,
+                message = ex.Message
+            };
 
-                var response = new
-                {
-                    status = 404,
-                    message = ex.Message
-                };
+            await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+        }
+        catch (Exception)
+        {
+            context.Response.StatusCode = 500;
+            context.Response.ContentType = "application/json";
 
-                await context.Response.WriteAsync(JsonSerializer.Serialize(response));
-            }
-            catch (Exception ex)
+            var response = new
             {
-                context.Response.StatusCode = 500;
-                context.Response.ContentType = "application/json";
+                status = 500,
+                message = "An unexpected error occurred"
+            };
 
-                var response = new
-                {
-                    status = 500,
-                    message = "An unexpected error occurred"
-                };
-
-                await context.Response.WriteAsync(JsonSerializer.Serialize(response));
-            }
+            await context.Response.WriteAsync(JsonSerializer.Serialize(response));
         }
     }
 }

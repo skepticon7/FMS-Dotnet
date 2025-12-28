@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Messaging\Clients\" />
     <Folder Include="Repositories\" />
   </ItemGroup>
 

@@ -24,7 +24,7 @@ public class GetPatientsByDoctorIdHandler(
             throw new NotFoundException($"Doctor with id {request.Id} not found");
 
         var patientIds = await _fileServiceClient.GetPatientIdsByDoctorAsync(doctor.Id);
-
+        
         if (!patientIds.Any())
             return new PagedResult<PatientDTO>
             {
@@ -42,10 +42,10 @@ public class GetPatientsByDoctorIdHandler(
                 Genders = request.Genders
             }
             , cancellationToken);
-
+        var patientDtos = _mapper.Map<List<PatientDTO>>(patients);
         return new PagedResult<PatientDTO>
         {
-            Items = [],
+            Items = patientDtos,
             TotalCount = totalCount
         };
 

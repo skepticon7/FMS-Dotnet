@@ -3,27 +3,46 @@ using MassTransit;
 using MediatR;
 using UserService.Application.Features.Doctors.Queries.GetDoctorById;
 using UserService.Application.Features.Patients.Queries.GetPatientById;
+using UserService.Application.Common.Exceptions;
 
 namespace UserService.Infrastructure.Messaging.Consumers;
 
-public class ValidateUsersConsumer(IMediator _mediator) : IConsumer<ValidateUsersRequest>
+public class ValidateUsersConsumer : IConsumer<ValidateUsersRequest>
 {
+    private readonly IMediator _mediator;
+
+    public ValidateUsersConsumer(IMediator mediator)
+    {
+        _mediator = mediator;
+    }
+
     public async Task Consume(ConsumeContext<ValidateUsersRequest> context)
     {
         var request = context.Message;
 
-        var doctorResult = await _mediator.Send(new GetDoctorByIdQuery(request.DoctorId));
-        var patientResult = await _mediator.Send(new GetPatientByIdQuery(request.PatientId));
-        var managerResult = await _mediator.Send(new GetDoctorByIdQuery(request.ManagerId));
+        bool doctorExists = true;
+        bool patientExists = true;
 
-        var doctorExists = doctorResult != null;
-        var patientExists = patientResult != null;
-        var managerExists = managerResult != null;
+        try
+        {
+            var doctorResult = await _mediator.Send(new GetDoctorByIdQuery(request.DoctorId));
+            doctorExists = doctorResult != null;
+        }
+        catch (NotFoundException)
+        {
+            doctorExists = false;
+        }
 
-        await context.RespondAsync(new ValidateUsersResponse(
-            doctorExists, 
-            patientExists, 
-            managerExists
-        ));
+        try
+        {
+            var patientResult = await _mediator.Send(new GetPatientByIdQuery(request.PatientId));
+            patientExists = patientResult != null;
+        }
+        catch (NotFoundException)
+        {
+            patientExists = false;
+        }
+
+        await context.RespondAsync(new ValidateUsersResponse(doctorExists, patientExists));
     }
 }

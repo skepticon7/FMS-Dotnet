@@ -7,7 +7,7 @@ namespace UserService.Infrastructure.Persistence
     {
         public UserDbContext CreateDbContext(string[] args)
         {
-            var connectionString = "Server=localhost;Database=user_serviceDB;User=yussef_vivo;Password=1234;";
+            var connectionString = "Server=localhost;Database=user_serviceDB;User=root;Password=;";
 
             var optionsBuilder = new DbContextOptionsBuilder<UserDbContext>();
             optionsBuilder.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));

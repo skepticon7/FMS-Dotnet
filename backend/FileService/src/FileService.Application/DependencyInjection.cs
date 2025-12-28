@@ -8,8 +8,7 @@ namespace FileService.Application
     {
         public static IServiceCollection AddApplication(this IServiceCollection services)
         {
-            // --- FIX FOR MEDIATR V11 ---
-            // The v11 package takes the assembly directly, without "cfg => ..."
+           
             services.AddMediatR(Assembly.GetExecutingAssembly());
 
             services.AddAutoMapper(Assembly.GetExecutingAssembly());

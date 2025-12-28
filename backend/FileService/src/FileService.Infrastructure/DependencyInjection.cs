@@ -1,4 +1,5 @@
 ﻿using FileService.Application.Common.Interfaces;
+using FileService.Application.Features.Patients.Consumers;
 using FileService.Infrastructure.Persistence;
 using FileService.Infrastructure.Storage;
 using Microsoft.EntityFrameworkCore;
@@ -26,7 +27,7 @@ namespace FileService.Infrastructure
             {
                 // If you had consumers (listeners) in this service, you would register them here:
                 // x.AddConsumer<MyFileCreatedConsumer>();
-
+                x.AddConsumer<GetDoctorPatientsConsumer>();
                 x.UsingRabbitMq((context, cfg) =>
                 {
                     // Configure Host
@@ -39,6 +40,7 @@ namespace FileService.Infrastructure
                     // Automatically configure endpoints for any consumers registered above
                     cfg.ConfigureEndpoints(context);
                 });
+                
             });
             return services;
         }

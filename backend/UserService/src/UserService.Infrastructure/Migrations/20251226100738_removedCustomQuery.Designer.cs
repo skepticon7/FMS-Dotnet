@@ -12,8 +12,8 @@ using UserService.Infrastructure.Persistence;
 namespace UserService.Infrastructure.Migrations
 {
     [DbContext(typeof(UserDbContext))]
-    [Migration("20251219144757_addedCustomQueryForSoftDeletion")]
-    partial class addedCustomQueryForSoftDeletion
+    [Migration("20251226100738_removedCustomQuery")]
+    partial class removedCustomQuery
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

@@ -4,6 +4,7 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using FileService.Application.Features.Files.Commands.DeleteFile;
 using FileService.Application.Features.Files.Commands.UpdateFile;
+using Microsoft.AspNetCore.Authorization;
 
 namespace FileService.Api.Controllers
 {
