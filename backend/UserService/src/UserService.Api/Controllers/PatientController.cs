@@ -83,7 +83,7 @@ public class PatientController(IMediator _mediator) : ControllerBase
         return Ok(stats);
     }
 
-    [HttpGet("1/{id}")]
+    [HttpGet("getPatientsStatsByDoctorId/{id}")]
     [Authorize(Policy = "DoctorOrManager")]
     public async Task<IActionResult> GetPatientsStatsByDoctorId(long id)
     {
