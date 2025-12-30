@@ -20,11 +20,13 @@ namespace FileService.Api.Controllers
         }
 
         [HttpPost("create")]
+        [Authorize(Policy = "ManagerOnly")]
         public async Task<IActionResult> Create(CreateFolderCommand command)
         {
             var folderId = await _mediator.Send(command);
             return Ok(new { Id = folderId });
         }
+        [Authorize(Policy = "ManagerOrDoctor")]
         [HttpGet("get/{id}")]
         public async Task<IActionResult> GetById(Guid id)
         {
@@ -33,6 +35,7 @@ namespace FileService.Api.Controllers
         }
         
         [HttpDelete("delete/{id}")]
+        [Authorize(Policy = "ManagerOnly")]
         public async Task<IActionResult> Delete(
             Guid id,
             [FromQuery] string? notes)
@@ -61,6 +64,7 @@ namespace FileService.Api.Controllers
             return NoContent();
         }
         [HttpGet("get/doctor/{doctorId}")]
+        [Authorize(Policy = "ManagerOnly")]
         public async Task<IActionResult> GetByDoctorId(string doctorId)
         {
             // We pass the string ID directly to the query we just created
@@ -70,10 +74,17 @@ namespace FileService.Api.Controllers
             return Ok(folders);
         }
         [HttpGet("get/patient/{patientId}")]
+        [Authorize(Policy = "DoctorOrManager")]
         public async Task<IActionResult> GetByPatientId(string patientId)
         {
             var folders = await _mediator.Send(new GetFoldersByPatientIdQuery(patientId));
             return Ok(folders);
+        }
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAll()
+        {
+            var result = await _mediator.Send(new GetAllFoldersQuery());
+            return Ok(result);
         }
     }
 }

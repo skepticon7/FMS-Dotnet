@@ -4,11 +4,14 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using FileService.Application.Features.Files.Commands.DeleteFile;
 using FileService.Application.Features.Files.Commands.UpdateFile;
+using FileService.Application.Features.Files.Queries.GetAllFiles;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace FileService.Api.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/file")]
     public class FilesController : ControllerBase
     {
@@ -19,25 +22,36 @@ namespace FileService.Api.Controllers
             _mediator = mediator;
         }
 
+        // --- UPDATED HELPER METHOD ---
+        private string GetPerformedBy()
+        {
+            var fullName = User.FindFirst("fullName")?.Value;
+
+            return fullName 
+                   ?? User.FindFirst(ClaimTypes.Email)?.Value 
+                   ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value 
+                   ?? "System";
+        }
+        // -----------------------------
+
         [HttpPost("upload")]
         public async Task<IActionResult> Upload([FromForm] UploadFileCommand command)
         {
-            
-            var fileId = await _mediator.Send(command);
+            var secureCommand = command with { UploadedBy = GetPerformedBy() };
+
+            var fileId = await _mediator.Send(secureCommand);
             return Ok(new { Id = fileId });
         }
 
-        [HttpGet("test")]
-        public async Task<IActionResult> GetTest()
-        {
-            return Ok("hello world");
-        }
-        [HttpGet ("get/{id}")]
+        
+
+        [HttpGet("get/{id}")]
         public async Task<IActionResult> GetById(Guid id)
         {
             var file = await _mediator.Send(new GetFileByIdQuery(id));
             return Ok(file);
         }
+
         [HttpDelete("delete/{id:guid}")]
         public async Task<IActionResult> Delete(
             Guid id,
@@ -45,7 +59,7 @@ namespace FileService.Api.Controllers
         {
             var command = new DeleteFileCommand(
                 FileId: id,
-                PerformedBy: User.Identity?.Name ?? "system",
+                PerformedBy: GetPerformedBy(), // Will be "John Doe"
                 Notes: notes
             );
 
@@ -53,6 +67,7 @@ namespace FileService.Api.Controllers
 
             return NoContent();
         }
+
         [HttpPut("update/{id:guid}")]
         public async Task<IActionResult> Update(
             Guid id,
@@ -62,15 +77,21 @@ namespace FileService.Api.Controllers
                 FileId: id,
                 FileName: request.FileName,
                 FileType: request.FileType,
-                PerformedBy: request.PerformedBy,
+                PerformedBy: GetPerformedBy(), // Will be "John Doe"
                 Checksum: request.Checksum,
                 Notes: request.Notes
             );
 
             await _mediator.Send(command);
 
-            return NoContent(); // 204
+            return NoContent(); 
         }
-        
+
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAll()
+        {
+            var files = await _mediator.Send(new GetAllFilesQuery());
+            return Ok(files);
+        }
     }
 }
