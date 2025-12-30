@@ -12,8 +12,8 @@ namespace FileService.Application.Features.Files.Commands.UploadFile
     public record UploadFileCommand(
         Guid FolderId,
         IFormFile File,
-        MedicalFileType FileType,
-        string UploadedBy,
+        MedicalFileType FileType, 
+        string UploadedBy,       
         string? Notes
     ) : IRequest<Guid>;
 
