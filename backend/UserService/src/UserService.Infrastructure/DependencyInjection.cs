@@ -6,7 +6,6 @@ using UserService.Application.Common.Caching;
 using UserService.Application.Common.Security;
 using UserService.Application.Interfaces;
 using UserService.Application.Interfaces.Messaging;
-using UserService.Domain.Entities;
 using UserService.Infrastructure.Cache;
 using UserService.Infrastructure.Messaging.Clients;
 using UserService.Infrastructure.Repositories;
@@ -39,10 +38,29 @@ public static class DependencyInjection
                     h.Password(configuration["DefaultConnections:rabbitmq:Password"]!);
                 });
                 configurator.ConfigureEndpoints(context);
+                
+                configurator.UseMessageRetry(r =>
+                {
+                    r.Exponential(
+                        retryLimit: 3,
+                        minInterval: TimeSpan.FromSeconds(1),
+                        maxInterval: TimeSpan.FromSeconds(10),
+                        intervalDelta: TimeSpan.FromSeconds(2)
+                    );
+                });
+                
+                configurator.UseCircuitBreaker(cb =>
+                {
+                    cb.TrackingPeriod = TimeSpan.FromMinutes(1);
+                    cb.TripThreshold = 15;
+                    cb.ActiveThreshold = 10;
+                    cb.ResetInterval = TimeSpan.FromMinutes(2);
+                });
+                
             });
             
             busConfigurator.AddRequestClient<GetPatientIdsByDoctorIdRequest>();
-            
+            busConfigurator.SetDefaultRequestTimeout(TimeSpan.FromSeconds(10));
         });
         
         return services;

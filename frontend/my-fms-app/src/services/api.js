@@ -301,9 +301,20 @@ export const deleteDoctor = async (doctorId) => {
 
 // get requests
 
-export const getPatientsByDoctorId = async (doctorId) => {
+export const getPatientsByDoctorId = async (filters , doctorId) => {
+    const params = new URLSearchParams();
+
+    Object.entries(filters).forEach(([key, value]) => {
+        if (value === undefined || value === null || value === "") return;
+
+        if (Array.isArray(value)) {
+            value.forEach(v => params.append(key, v));
+        } else {
+            params.append(key, value);
+        }
+    });
     try {
-        const response = await axios.get(`${apiGateway}/user-service/api/patients/getPatientsByDoctorId/${doctorId}`  ,  {...getAuthConfig()});
+        const response = await axios.get(`${apiGateway}/user-service/api/patient/getPatientsByDoctorId/${doctorId}`  ,  {params , ...getAuthConfig()});
         return response;
     }catch (e) {
         throw e;
@@ -453,7 +464,6 @@ export const getInterventionsStats = async (role , userId) => {
 }
 
 export const getPatients = async (filters) => {
-    console.log(filters);
     const params = new URLSearchParams();
 
     Object.entries(filters).forEach(([key, value]) => {
@@ -476,6 +486,15 @@ export const getPatients = async (filters) => {
 export const getPatientStats = async () => {
     try {
         const response = await axios.get(`${apiGateway}/user-service/api/patient/getPatientsStats` ,{...getAuthConfig()});
+        return response;
+    }catch (e) {
+        throw e;
+    }
+}
+
+export const getPatientStatsByDoctorId = async (doctorId) => {
+    try {
+        const response = await axios.get(`${apiGateway}/user-service/api/patient/getPatientsStatsByDoctorId/${doctorId}` ,{...getAuthConfig()});
         return response;
     }catch (e) {
         throw e;
@@ -512,7 +531,46 @@ export const getDoctors = async (filters) => {
     }
 }
 
+export const getFoldersByManager = async (filters = null , managerId) => {
+    // const params = new URLSearchParams();
+    //
+    // Object.entries(filters).forEach(([key, value]) => {
+    //     if (value === undefined || value === null || value === "") return;
+    //
+    //     if (Array.isArray(value)) {
+    //         value.forEach(v => params.append(key, v));
+    //     } else {
+    //         params.append(key, value);
+    //     }
+    // });
+    try {
+        const response = await axios.get(`${apiGateway}/file-service/api/folder/get/${managerId}` ,{...getAuthConfig()});
+        return response;
+    }catch (e) {
+        throw e;
+    }
+}
 
+
+export const getFoldersByDoctorId = async (doctorId) => {
+    // const params = new URLSearchParams();
+    //
+    // Object.entries(filters).forEach(([key, value]) => {
+    //     if (value === undefined || value === null || value === "") return;
+    //
+    //     if (Array.isArray(value)) {
+    //         value.forEach(v => params.append(key, v));
+    //     } else {
+    //         params.append(key, value);
+    //     }
+    // });
+    try {
+        const response = await axios.get(`${apiGateway}/file-service/api/folder/get/doctor/${doctorId}` ,{...getAuthConfig()});
+        return response;
+    }catch (e) {
+        throw e;
+    }
+}
 
 
 export const getSuperuser = async (superuserId) => {
