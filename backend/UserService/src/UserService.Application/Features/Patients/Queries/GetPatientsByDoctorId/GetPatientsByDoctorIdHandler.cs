@@ -23,14 +23,19 @@ public class GetPatientsByDoctorIdHandler(
         if(doctor == null)
             throw new NotFoundException($"Doctor with id {request.Id} not found");
 
-        var patientIds = await _fileServiceClient.GetPatientIdsByDoctorAsync(doctor.Id);
+        Console.WriteLine("getting patients ids");
         
+        var patientIds = await _fileServiceClient.GetPatientIdsByDoctorAsync(doctor.Id);
+
         if (!patientIds.Any())
             return new PagedResult<PatientDTO>
             {
                 Items = new List<PatientDTO>(),
                 TotalCount = 0
             };
+        
+        Console.WriteLine("still waiting to get patients ids");
+
         
         var (patients , totalCount) = await _patientRepository.GetPatientsAsync(
             patientIds,
@@ -42,10 +47,15 @@ public class GetPatientsByDoctorIdHandler(
                 Genders = request.Genders
             }
             , cancellationToken);
-        var patientDtos = _mapper.Map<List<PatientDTO>>(patients);
+
+        foreach (var patient in patients)
+        {
+            Console.WriteLine("Patient id : " + patient.Id);
+        }
+        
         return new PagedResult<PatientDTO>
         {
-            Items = patientDtos,
+            Items = _mapper.Map<List<PatientDTO>>(patients),
             TotalCount = totalCount
         };
 

@@ -139,22 +139,31 @@ const Home = () => {
                 </div>
             </div>
             <nav className='bg-extradark-green flex flex-col justify-between items-start w-full h-full px-6 py-4'>
-                    <div className='space-y-2 w-full'>
-                        <SideBarButton selectedOption={selectedPage} setSelectedOption={setSelectedPage} title={"Dashboard"} Icon={BarChart3}/>
-                        {(role === "Doctor" || role === "Manager") &&
-                            <SideBarButton  selectedOption={selectedPage} setSelectedOption={setSelectedPage} title={"Patients"} Icon={Users}/>
-                        }
-                        {(role === "Manager") && <SideBarButton  selectedOption={selectedPage} setSelectedOption={setSelectedPage} title={"Doctors"} Icon={Stethoscope}/>}
-                        <SideBarButton  selectedOption={selectedPage} setSelectedOption={setSelectedPage} title={"Files"} Icon={ClipboardCheck}/>
+                <div className='space-y-2 w-full'>
+                    <SideBarButton selectedOption={selectedPage} setSelectedOption={setSelectedPage} title={"Dashboard"}
+                                   Icon={BarChart3}/>
+                    {(role === "Doctor" || role === "Manager") &&
+                        <SideBarButton selectedOption={selectedPage} setSelectedOption={setSelectedPage}
+                                       title={"Patients"} Icon={Users}/>
+                    }
+                    {(role === "Manager") &&
+                        <SideBarButton selectedOption={selectedPage} setSelectedOption={setSelectedPage}
+                                       title={"Doctors"} Icon={Stethoscope}/>}
 
-                        {(role === "Manager") &&
-                            <button
-                                onClick={() => setSelectedPage("usersManagement")}
-                                className={`flex w-full cursor-pointer py-3 px-3 rounded-md items-start justify-start gap-3 hover:bg-dark-green transition-colors duration-200 ${selectedPage === 'usersManagement' ? 'bg-dark-green' : null}`}>
-                                <UserCog className='w-5 h-5 text-white stroke-[2]'/>
-                                <p className='text-white font-medium'>Users Management</p>
-                            </button>}
-                    </div>
+                    <button
+                        onClick={() => setSelectedPage("files")}
+                        className={`flex w-full cursor-pointer py-3 px-3 rounded-md items-start justify-start gap-3 hover:bg-dark-green transition-colors duration-200 ${selectedPage === 'files' ? 'bg-dark-green' : null}`}>
+                        <ClipboardCheck className='w-5 h-5 text-white stroke-[2]'/>
+                        <p className='text-white font-medium'>Folders & Files</p>
+                    </button>
+                    {(role === "Manager") &&
+                        <button
+                            onClick={() => setSelectedPage("usersManagement")}
+                            className={`flex w-full cursor-pointer py-3 px-3 rounded-md items-start justify-start gap-3 hover:bg-dark-green transition-colors duration-200 ${selectedPage === 'usersManagement' ? 'bg-dark-green' : null}`}>
+                            <UserCog className='w-5 h-5 text-white stroke-[2]'/>
+                            <p className='text-white font-medium'>Users Management</p>
+                        </button>}
+                </div>
 
                 {(role === "Manager") && (
                     <div className='p-3 flex flex-col items-start justify-start gap-2 w-full rounded-lg bg-dark-green'>
@@ -186,16 +195,16 @@ const Home = () => {
                             <p className='text-sm font-medium text-gray-500'>
                                 {selectedPage === 'dashboard' && "Realtime monitoring & management"}
                                 {selectedPage === 'patients' && "Manage patients profiles"}
-                                {selectedPage === 'files' && "Manage and track all technician interventions"}
+                                {selectedPage === 'files' && "Manage and track all folders & files"}
                                 {selectedPage === 'doctors' && "Manage doctors profile"}
                                 {selectedPage === 'usersManagement' && "Manage user accounts, roles, and permissions"}
                             </p>
                         </div>
                     </div>
 
-                    <div className='flex items-center space-x-4'>
+                    <div className='flex items-center z-99 space-x-4'>
 
-                        <div className='relative border-black' ref={dropdownRef}>
+                        <div className='relative border-black ' ref={dropdownRef}>
                             <button
                              onClick={(e) => {
                                 e.stopPropagation();
