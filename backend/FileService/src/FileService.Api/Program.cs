@@ -98,6 +98,8 @@ builder.Services.AddAuthorization(options =>
 
     options.AddPolicy("ManagerOnly", policy => 
         policy.RequireRole("MANAGER", "Manager"));
+    options.AddPolicy("ManagerOrDoctor", policy => 
+        policy.RequireRole("Manager", "Doctor"));
 });
 
 // 1. Add Services from other layers
