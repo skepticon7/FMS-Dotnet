@@ -74,13 +74,14 @@ namespace FileService.Api.Controllers
             return Ok(folders);
         }
         [HttpGet("get/patient/{patientId}")]
-        [Authorize(Policy = "DoctorOrManager")]
+        [Authorize(Policy = "ManagerOrDoctor")]
         public async Task<IActionResult> GetByPatientId(string patientId)
         {
             var folders = await _mediator.Send(new GetFoldersByPatientIdQuery(patientId));
             return Ok(folders);
         }
         [HttpGet("all")]
+        [Authorize(Policy = "ManagerOnly")]
         public async Task<IActionResult> GetAll()
         {
             var result = await _mediator.Send(new GetAllFoldersQuery());

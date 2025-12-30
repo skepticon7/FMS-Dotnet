@@ -544,7 +544,7 @@ export const getFoldersByManager = async (filters = null , managerId) => {
     //     }
     // });
     try {
-        const response = await axios.get(`${apiGateway}/file-service/api/folder/get/${managerId}` ,{...getAuthConfig()});
+        const response = await axios.get(`${apiGateway}/file-service/api/folder/all` ,{...getAuthConfig()});
         return response;
     }catch (e) {
         throw e;
