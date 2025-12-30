@@ -5,6 +5,7 @@ using FileService.Application.Common.Exceptions;
 using FileService.Domain.Entities;
 using FileService.Domain.Enums;
 using MassTransit;
+using Microsoft.Extensions.Caching.Distributed; // 1. Add Namespace
 
 namespace FileService.Application.Features.Folders.Commands.DeleteFolder
 {
@@ -24,18 +25,22 @@ namespace FileService.Application.Features.Folders.Commands.DeleteFolder
         Guid FolderId,
         string FileName
     );
+
     public class DeleteFolderCommandHandler
         : IRequestHandler<DeleteFolderCommand>
     {
         private readonly IApplicationDbContext _context;
         private readonly IPublishEndpoint _publishEndpoint;
+        private readonly IDistributedCache _cache; // 2. Add Cache Field
 
         public DeleteFolderCommandHandler(
             IApplicationDbContext context,
-            IPublishEndpoint publishEndpoint)
+            IPublishEndpoint publishEndpoint,
+            IDistributedCache cache) // 3. Inject Cache
         {
             _context = context;
             _publishEndpoint = publishEndpoint;
+            _cache = cache;
         }
 
         public async Task<Unit> Handle(
@@ -62,7 +67,10 @@ namespace FileService.Application.Features.Folders.Commands.DeleteFolder
             folder.DeletedAt = now;
 
             // 3️⃣ Soft delete all files
-            foreach (var file in folder.Files.Where(f => f.DeletedAt == null))
+            // Capture the list of affected files for cache clearing later
+            var affectedFiles = folder.Files.Where(f => f.DeletedAt == null).ToList();
+
+            foreach (var file in affectedFiles)
             {
                 file.DeletedAt = now;
                 file.IsLatest = false;
@@ -91,7 +99,7 @@ namespace FileService.Application.Features.Folders.Commands.DeleteFolder
             // 4️⃣ Persist DB changes
             await _context.SaveChangesAsync(cancellationToken);
 
-            // 5️⃣ Publish folder deleted event
+            // 5️⃣ Publish Folder Deleted Event
             await _publishEndpoint.Publish(
                 new FolderDeletedEvent(
                     FolderId: folder.Id,
@@ -100,7 +108,51 @@ namespace FileService.Application.Features.Folders.Commands.DeleteFolder
                 ),
                 cancellationToken);
 
+            // 6️⃣ OPTIMIZED CACHE INVALIDATION
+            await InvalidateCaches(folder, affectedFiles, cancellationToken);
+
             return Unit.Value;
+        }
+
+        private async Task InvalidateCaches(Folder folder, List<FileEntry> deletedFiles, CancellationToken cancellationToken)
+        {
+            var tasks = new List<Task>();
+
+            // --- Folder Cache Invalidations ---
+            
+            // Remove the specific folder
+            tasks.Add(_cache.RemoveAsync($"folder:{folder.Id}", cancellationToken));
+            
+            // Remove the main folder list
+            tasks.Add(_cache.RemoveAsync("folders:all", cancellationToken));
+
+            // Remove Patient/Doctor specific lists
+            if (!string.IsNullOrEmpty(folder.PatientId))
+            {
+                tasks.Add(_cache.RemoveAsync($"folders:patient:{folder.PatientId}", cancellationToken));
+            }
+
+            if (!string.IsNullOrEmpty(folder.DoctorId))
+            {
+                tasks.Add(_cache.RemoveAsync($"folders:doctor:{folder.DoctorId}", cancellationToken));
+            }
+
+            // --- File Cache Invalidations (Crucial!) ---
+            
+            // Remove the main file list because we deleted files
+            if (deletedFiles.Any())
+            {
+                tasks.Add(_cache.RemoveAsync("files:all", cancellationToken));
+            }
+
+            // Remove individual file caches for every file that was deleted
+            foreach (var file in deletedFiles)
+            {
+                tasks.Add(_cache.RemoveAsync($"file:{file.Id}", cancellationToken));
+            }
+
+            // Execute all Redis commands in parallel
+            await Task.WhenAll(tasks);
         }
     }
 }

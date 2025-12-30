@@ -84,30 +84,25 @@ namespace FileService.Application.Features.Folders.Commands.CreateFolder
             ), cancellationToken);
 
             // 🔹 5. Save Changes
-            // If using Outbox, the event is saved to DB here and sent later automatically
             await _context.SaveChangesAsync(cancellationToken);
 
             // 🔹 6. Invalidate Cache
-            // We do this AFTER save ensures data is actually in DB
             await InvalidateCaches(entity, cancellationToken);
 
             return entity.Id;
         }
-
+        // 
         private async Task InvalidateCaches(Folder folder, CancellationToken cancellationToken)
         {
-            // Only invalidate if you are actually caching a "GetAll" list (often not recommended for large sets)
-            // await _cache.RemoveAsync("folders:all", cancellationToken); 
+            await _cache.RemoveAsync("folders:all", cancellationToken); 
 
             if (!string.IsNullOrEmpty(folder.PatientId))
             {
-                // Invalidate the "GetFoldersByPatient" query
                 await _cache.RemoveAsync($"folders:patient:{folder.PatientId}", cancellationToken);
             }
 
             if (!string.IsNullOrEmpty(folder.DoctorId))
             {
-                // Invalidate the "GetFoldersByDoctor" query we wrote earlier
                 await _cache.RemoveAsync($"folders:doctor:{folder.DoctorId}", cancellationToken);
             }
         }

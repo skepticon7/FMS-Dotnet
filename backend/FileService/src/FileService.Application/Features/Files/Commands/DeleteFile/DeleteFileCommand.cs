@@ -4,6 +4,7 @@ using FileService.Application.Common.Interfaces;
 using FileService.Application.Common.Exceptions;
 using FileService.Domain.Entities;
 using FileService.Domain.Enums;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace FileService.Application.Features.Files.Commands.DeleteFile
 {
@@ -13,19 +14,18 @@ namespace FileService.Application.Features.Files.Commands.DeleteFile
         string? Notes
     ) : IRequest;
     
-    public class DeleteFileCommandHandler
-        : IRequestHandler<DeleteFileCommand>
+    public class DeleteFileCommandHandler : IRequestHandler<DeleteFileCommand>
     {
         private readonly IApplicationDbContext _context;
+        private readonly IDistributedCache _cache;
 
-        public DeleteFileCommandHandler(IApplicationDbContext context)
+        public DeleteFileCommandHandler(IApplicationDbContext context, IDistributedCache cache)
         {
             _context = context;
+            _cache = cache;
         }
 
-        public async Task<Unit> Handle(
-            DeleteFileCommand request,
-            CancellationToken cancellationToken)
+        public async Task<Unit> Handle(DeleteFileCommand request, CancellationToken cancellationToken)
         {
             // 1️⃣ Load file
             var file = await _context.FileEntries
@@ -35,8 +35,7 @@ namespace FileService.Application.Features.Files.Commands.DeleteFile
 
             if (file == null)
             {
-                throw new NotFoundException(
-                    $"File with ID {request.FileId} not found");
+                throw new NotFoundException($"File with ID {request.FileId} not found");
             }
 
             // 2️⃣ Soft delete
@@ -51,13 +50,23 @@ namespace FileService.Application.Features.Files.Commands.DeleteFile
                 Action = FileAction.Deleted,
                 Notes = request.Notes,
                 Timestamp = DateTime.UtcNow,
-                PerformedBy = request.PerformedBy
+                PerformedBy = request.PerformedBy // Matches value from Controller/Token
             };
 
             _context.FileHistories.Add(history);
 
             // 4️⃣ Persist
             await _context.SaveChangesAsync(cancellationToken);
+
+            // 5️⃣ OPTIMIZED CACHE INVALIDATION
+            // Execute both cache removals at the same time
+            var tasks = new[]
+            {
+                _cache.RemoveAsync($"file:{request.FileId}", cancellationToken),
+                _cache.RemoveAsync("files:all", cancellationToken)
+            };
+
+            await Task.WhenAll(tasks);
 
             return Unit.Value;
         }

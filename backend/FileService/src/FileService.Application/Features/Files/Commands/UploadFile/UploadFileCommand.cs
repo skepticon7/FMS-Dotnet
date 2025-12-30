@@ -9,16 +9,15 @@ using FileService.Application.Common.Exceptions;
 
 namespace FileService.Application.Features.Files.Commands.UploadFile
 {
-    // 1. The Command
     public record UploadFileCommand(
         Guid FolderId,
         IFormFile File,
-        MedicalFileType FileType, // e.g. MRI, Prescription
-        string UploadedBy,        // Usually from User Claims
+        MedicalFileType FileType,
+        string UploadedBy,
         string? Notes
     ) : IRequest<Guid>;
 
-    // 2. The Handler
+
     public class UploadFileCommandHandler : IRequestHandler<UploadFileCommand, Guid>
     {
         private readonly IApplicationDbContext _context;
@@ -26,16 +25,17 @@ namespace FileService.Application.Features.Files.Commands.UploadFile
         private readonly IAzureFileStorageService _azureStorage;
         private readonly IDistributedCache _cache;
 
-        
-
-        public UploadFileCommandHandler(IApplicationDbContext context, IFileStorageService storage , IAzureFileStorageService azureStorage , IDistributedCache cache)
+        public UploadFileCommandHandler(
+            IApplicationDbContext context, 
+            IFileStorageService storage, 
+            IAzureFileStorageService azureStorage, 
+            IDistributedCache cache)
         {
             _context = context;
             _storage = storage;
             _azureStorage = azureStorage;
             _cache = cache;
         }
-        
 
         public async Task<Guid> Handle(UploadFileCommand request, CancellationToken cancellationToken)
         {
@@ -45,11 +45,10 @@ namespace FileService.Application.Features.Files.Commands.UploadFile
 
             if (folder == null)
             {
-                // In a real app, use a custom NotFoundException here
                 throw new NotFoundException($"Folder with ID {request.FolderId} not found.");
             }
 
-            // B. Versioning Logic: Check if file exists
+            // B. Versioning Logic
             var existingFile = await _context.FileEntries
                 .Where(f => f.FolderId == request.FolderId 
                          && f.FileName == request.File.FileName 
@@ -61,13 +60,11 @@ namespace FileService.Application.Features.Files.Commands.UploadFile
 
             if (existingFile != null)
             {
-                // Mark old file as not latest
                 existingFile.IsLatest = false;
                 newVersion = existingFile.Version + 1;
             }
 
-            // C. Upload to Physical Storage (Local/S3)
-            // We use the Folder ID as the subfolder name to keep things organized
+            // C. Upload to Storage
             var storagePath = await _storage.SaveFileAsync(request.File, request.FolderId.ToString());
             var azurePath = await _azureStorage.SaveFileAsync(request.File, request.FolderId.ToString());
 
@@ -78,7 +75,7 @@ namespace FileService.Application.Features.Files.Commands.UploadFile
                 FolderId = request.FolderId,
                 FileName = request.File.FileName,
                 ContentType = request.File.ContentType,
-                FileType = request.FileType, // <--- Using your new Enum
+                FileType = request.FileType,
                 Size = request.File.Length,
                 StoragePath = storagePath,
                 Checksum = "PENDING_CALCULATION", 
@@ -104,7 +101,16 @@ namespace FileService.Application.Features.Files.Commands.UploadFile
             // F. Save to DB
             _context.FileEntries.Add(newFileEntry);
             await _context.SaveChangesAsync(cancellationToken);
-            await _cache.RemoveAsync($"file-{newFileEntry.Id}", cancellationToken);
+
+            // --- G. CACHE INVALIDATION ---
+            
+            // 1. Invalidate the "All Files" list (CRITICAL FIX)
+            // This ensures the next "Get All" call fetches the new file from DB
+            await _cache.RemoveAsync("files:all", cancellationToken);
+
+            // 2. (Optional) Clear specific file cache if you were doing an update
+            // We use ':' to match the convention in your GetById query
+            await _cache.RemoveAsync($"file:{newFileEntry.Id}", cancellationToken);
             
             return newFileEntry.Id;
         }
