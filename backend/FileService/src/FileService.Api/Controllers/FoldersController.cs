@@ -64,7 +64,7 @@ namespace FileService.Api.Controllers
             return NoContent();
         }
         [HttpGet("get/doctor/{doctorId}")]
-        [Authorize(Policy = "ManagerOnly")]
+        [Authorize(Policy = "ManagerOrDoctor")]
         public async Task<IActionResult> GetByDoctorId(string doctorId)
         {
             // We pass the string ID directly to the query we just created

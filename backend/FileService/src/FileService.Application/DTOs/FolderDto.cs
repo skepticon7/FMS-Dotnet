@@ -13,4 +13,6 @@ public class FolderDto
     public string? PatientId { get; set; }
 
     public DateTime CreatedAt { get; set; }
+    
+    public int FileCount { get; set; }
 }

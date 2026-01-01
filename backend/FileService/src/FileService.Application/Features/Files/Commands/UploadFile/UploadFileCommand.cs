@@ -12,8 +12,8 @@ namespace FileService.Application.Features.Files.Commands.UploadFile
     public record UploadFileCommand(
         Guid FolderId,
         IFormFile File,
-        MedicalFileType FileType, 
-        string UploadedBy,       
+        MedicalFileType FileType,
+        string UploadedBy,
         string? Notes
     ) : IRequest<Guid>;
 
@@ -26,9 +26,9 @@ namespace FileService.Application.Features.Files.Commands.UploadFile
         private readonly IDistributedCache _cache;
 
         public UploadFileCommandHandler(
-            IApplicationDbContext context, 
-            IFileStorageService storage, 
-            IAzureFileStorageService azureStorage, 
+            IApplicationDbContext context,
+            IFileStorageService storage,
+            IAzureFileStorageService azureStorage,
             IDistributedCache cache)
         {
             _context = context;
@@ -50,9 +50,9 @@ namespace FileService.Application.Features.Files.Commands.UploadFile
 
             // B. Versioning Logic
             var existingFile = await _context.FileEntries
-                .Where(f => f.FolderId == request.FolderId 
-                         && f.FileName == request.File.FileName 
-                         && f.IsLatest 
+                .Where(f => f.FolderId == request.FolderId
+                         && f.FileName == request.File.FileName
+                         && f.IsLatest
                          && f.DeletedAt == null)
                 .FirstOrDefaultAsync(cancellationToken);
 
@@ -78,7 +78,7 @@ namespace FileService.Application.Features.Files.Commands.UploadFile
                 FileType = request.FileType,
                 Size = request.File.Length,
                 StoragePath = storagePath,
-                Checksum = "PENDING_CALCULATION", 
+                Checksum = "PENDING_CALCULATION",
                 Version = newVersion,
                 IsLatest = true,
                 UploadedAt = DateTime.UtcNow,
@@ -102,15 +102,25 @@ namespace FileService.Application.Features.Files.Commands.UploadFile
             _context.FileEntries.Add(newFileEntry);
             await _context.SaveChangesAsync(cancellationToken);
 
-            // --- G. CACHE INVALIDATION ---
+            // --- G. CACHE INVALIDATION (UPDATED) ---
             
-            // 1. Invalidate the "All Files" list (CRITICAL FIX)
-            // This ensures the next "Get All" call fetches the new file from DB
-            await _cache.RemoveAsync("files:all", cancellationToken);
+            // 1. Invalidate "All Folders" list so the file count updates in the Manager View
+            await _cache.RemoveAsync("folders:all", cancellationToken);
 
-            // 2. (Optional) Clear specific file cache if you were doing an update
-            // We use ':' to match the convention in your GetById query
-            await _cache.RemoveAsync($"file:{newFileEntry.Id}", cancellationToken);
+            // 2. Invalidate specific Doctor/Patient lists if applicable
+            // (Uses the 'folder' entity we fetched in Step A)
+            if (!string.IsNullOrEmpty(folder.PatientId))
+            {
+                await _cache.RemoveAsync($"folders:patient:{folder.PatientId}", cancellationToken);
+            }
+
+            if (!string.IsNullOrEmpty(folder.DoctorId))
+            {
+                await _cache.RemoveAsync($"folders:doctor:{folder.DoctorId}", cancellationToken);
+            }
+
+            // 3. (Optional) Clear the specific folder cache if you have a "GetFolderById" query cached
+            await _cache.RemoveAsync($"folder:{request.FolderId}", cancellationToken);
             
             return newFileEntry.Id;
         }
