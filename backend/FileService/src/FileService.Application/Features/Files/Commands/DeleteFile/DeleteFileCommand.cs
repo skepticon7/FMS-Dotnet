@@ -38,6 +38,9 @@ namespace FileService.Application.Features.Files.Commands.DeleteFile
                 throw new NotFoundException($"File with ID {request.FileId} not found");
             }
 
+            // 👇 CRITICAL FIX: Capture the FolderId here so we can use it later
+            var folderId = file.FolderId; 
+
             // 2️⃣ Soft delete
             file.DeletedAt = DateTime.UtcNow;
             file.IsLatest = false;
@@ -50,7 +53,7 @@ namespace FileService.Application.Features.Files.Commands.DeleteFile
                 Action = FileAction.Deleted,
                 Notes = request.Notes,
                 Timestamp = DateTime.UtcNow,
-                PerformedBy = request.PerformedBy // Matches value from Controller/Token
+                PerformedBy = request.PerformedBy 
             };
 
             _context.FileHistories.Add(history);
@@ -59,12 +62,19 @@ namespace FileService.Application.Features.Files.Commands.DeleteFile
             await _context.SaveChangesAsync(cancellationToken);
 
             // 5️⃣ OPTIMIZED CACHE INVALIDATION
-            // Execute both cache removals at the same time
-            var tasks = new[]
-            {
-                _cache.RemoveAsync($"file:{request.FileId}", cancellationToken),
-                _cache.RemoveAsync("files:all", cancellationToken)
-            };
+            var tasks = new List<Task>();
+
+            // A. Remove the single file details
+            tasks.Add(_cache.RemoveAsync($"file:{request.FileId}", cancellationToken));
+
+            // B. FIX: Use the 'folderId' variable we captured above
+            tasks.Add(_cache.RemoveAsync($"files:folder:{folderId}", cancellationToken));
+
+            // C. Clear the main list of folders (updates counts)
+            tasks.Add(_cache.RemoveAsync("folders:all", cancellationToken));
+            
+            // D. Clear specific Folder Details metadata
+            tasks.Add(_cache.RemoveAsync($"folder:{folderId}", cancellationToken));
 
             await Task.WhenAll(tasks);
 

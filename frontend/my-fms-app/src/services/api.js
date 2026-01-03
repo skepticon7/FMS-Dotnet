@@ -550,6 +550,114 @@ export const getFoldersByManager = async (filters = null , managerId) => {
         throw e;
     }
 }
+// src/services/api.js
+
+export const createFolder = async (folderData) => {
+    try {
+        // C# Backend expects: record CreateFolderCommand(string Name, string? Type, string? PatientId, string? DoctorId)
+        // We must ensure PatientId and DoctorId are sent as STRINGS, not numbers.
+        
+        const payload = {
+            name: folderData.name,
+            type: folderData.type,
+            patientId: String(folderData.patientId), 
+            doctorId: String(folderData.doctorId)
+        };
+
+        const response = await axios.post(
+            `${apiGateway}/file-service/api/folder/create`, 
+            payload, 
+            { ...getAuthConfig() } 
+        );
+        return response;
+    } catch (e) {
+        // LOG THE SPECIFIC BACKEND ERROR
+        console.error("Backend Error Details:", e.response?.data);
+        throw e;
+    }
+}
+export const getFolderById = async (folderId) => {
+    try {
+        const response = await axios.get(
+            `${apiGateway}/file-service/api/folder/get/${folderId}`, 
+            { ...getAuthConfig() }
+        );
+        return response;
+    } catch (e) {
+        throw e;
+    }
+}
+
+export const updateFolder = async (folderId, folderData) => {
+    try {
+        // Ensure IDs are strings (matching your backend DTO)
+        const payload = {
+            name: folderData.name,
+            type: folderData.type,
+            patientId: String(folderData.patientId),
+            doctorId: String(folderData.doctorId)
+        };
+
+        const response = await axios.put( // or .patch depending on your backend
+            `${apiGateway}/file-service/api/folder/update/${folderId}`, 
+            payload, 
+            { ...getAuthConfig() }
+        );
+        return response;
+    } catch (e) {
+        throw e;
+    }
+}
+export const deleteFolder = async (folderId, notes) => {
+    try {
+        // Axios delete signature is: delete(url, config)
+        // Query parameters go inside config.params
+        const response = await axios.delete(
+            `${apiGateway}/file-service/api/folder/delete/${folderId}`, 
+            { 
+                params: { notes: notes }, // <--- Passes ?notes=YourNote
+                ...getAuthConfig() 
+            }
+        );
+        return response;
+    } catch (e) {
+        throw e;
+    }
+}
+export const getFilesByFolder = async (folderId) => {
+    try {
+        // Assuming your controller route matches this pattern
+        const response = await axios.get(
+            `${apiGateway}/file-service/api/file/get/folder/${folderId}`, 
+            { ...getAuthConfig() }
+        );
+        return response;
+    } catch (e) {
+        throw e;
+    }
+}
+export const uploadFile = async (formData) => {
+    try {
+        const response = await axios.post(
+            `${apiGateway}/file-service/api/file/upload`, 
+            formData, 
+            { 
+                ...getAuthConfig(),
+                headers: {
+                    ...getAuthConfig().headers,
+                    "Content-Type": "multipart/form-data" // Crucial for file uploads
+                }
+            }
+        );
+        return response;
+    } catch (e) {
+        throw e;
+    }
+}
+export const deleteFile = async (fileId, notes = "") => {
+    // Pass notes as a query parameter if needed
+    return axios.delete(`${apiGateway}/file-service/api/file/delete/${fileId}?notes=${encodeURIComponent(notes)}`, getAuthConfig());
+};
 
 
 export const getFoldersByDoctorId = async (doctorId) => {

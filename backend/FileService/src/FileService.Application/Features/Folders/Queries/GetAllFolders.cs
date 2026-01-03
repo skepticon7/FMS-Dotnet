@@ -7,10 +7,8 @@ using FileService.Application.DTOs;
 
 namespace FileService.Application.Features.Folders.Queries
 {
-    // 1️⃣ The Query: Returns a List of FolderDto
     public record GetAllFoldersQuery : IRequest<List<FolderDto>>;
 
-    // 2️⃣ The Handler
     public class GetAllFoldersQueryHandler 
         : IRequestHandler<GetAllFoldersQuery, List<FolderDto>>
     {
@@ -34,20 +32,22 @@ namespace FileService.Application.Features.Folders.Queries
             GetAllFoldersQuery request, 
             CancellationToken cancellationToken)
         {
-            // Define a key for the entire list
             var cacheKey = "folders:all";
 
-            // 🔹 1. Try Redis first
+            // 🔹 1. FAST PATH: Try Redis first
+            // We re-enabled this because we verified the DB logic works.
             var cached = await _cache.GetStringAsync(cacheKey, cancellationToken);
             if (cached != null)
             {
+                // If found in cache, return immediately (skips DB)
                 return JsonSerializer.Deserialize<List<FolderDto>>(cached)!;
             }
 
-            // 🔹 2. Query DB
+            // 🔹 2. SLOW PATH: Query DB
+            // Only runs if cache is empty (expired or invalidated)
             var folders = await _context.Folders
                 .AsNoTracking()
-                .Where(f => f.DeletedAt == null) // Filter soft-deleted
+                .Where(f => f.DeletedAt == null)
                 .Select(f => new FolderDto
                 {
                     Id = f.Id,
@@ -55,11 +55,12 @@ namespace FileService.Application.Features.Folders.Queries
                     Type = f.Type,
                     DoctorId = f.DoctorId,
                     PatientId = f.PatientId,
-                    CreatedAt = f.CreatedAt
+                    CreatedAt = f.CreatedAt,
+                    
+                    FileCount = f.Files.Count(fe => fe.DeletedAt == null) 
                 })
                 .ToListAsync(cancellationToken);
 
-            // 🔹 3. Cache result
             await _cache.SetStringAsync(
                 cacheKey,
                 JsonSerializer.Serialize(folders),

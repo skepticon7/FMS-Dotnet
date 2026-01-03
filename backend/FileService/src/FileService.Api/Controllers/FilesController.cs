@@ -7,6 +7,7 @@ using FileService.Application.Features.Files.Commands.UpdateFile;
 using FileService.Application.Features.Files.Queries.GetAllFiles;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using FileService.Application.Features.Files.Queries.GetFilesByFolderId;
 
 namespace FileService.Api.Controllers
 {
@@ -37,6 +38,7 @@ namespace FileService.Api.Controllers
         [HttpPost("upload")]
         public async Task<IActionResult> Upload([FromForm] UploadFileCommand command)
         {
+           
             var secureCommand = command with { UploadedBy = GetPerformedBy() };
 
             var fileId = await _mediator.Send(secureCommand);
@@ -91,6 +93,15 @@ namespace FileService.Api.Controllers
         public async Task<IActionResult> GetAll()
         {
             var files = await _mediator.Send(new GetAllFilesQuery());
+            return Ok(files);
+        }
+        [HttpGet("get/folder/{folderId}")]
+        [Authorize(Policy = "ManagerOrDoctor")] 
+        public async Task<IActionResult> GetByFolderId(Guid folderId)
+        {
+            var files = await _mediator.Send(new GetFilesByFolderIdQuery(folderId));
+            
+            // Returns 200 OK with the list (even if empty)
             return Ok(files);
         }
     }

@@ -1,11 +1,14 @@
 ﻿using FileService.Application.Features.Folders.Commands.CreateFolder;
 using FileService.Application.Features.Folders.Commands.DeleteFolder;
+using FileService.Application.Features.Folders.Commands.UpdateFolder;
 using FileService.Application.Features.Folders.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization; // 👈 Needed for [Authorize]
-using System.Security.Claims; // 👈 Needed to read Claims
+using System.Security.Claims;
+using Contracts.Folders;
 namespace FileService.Api.Controllers
+
 {
     [ApiController]
     [Authorize]
@@ -64,7 +67,7 @@ namespace FileService.Api.Controllers
             return NoContent();
         }
         [HttpGet("get/doctor/{doctorId}")]
-        [Authorize(Policy = "ManagerOnly")]
+        [Authorize(Policy = "ManagerOrDoctor")]
         public async Task<IActionResult> GetByDoctorId(string doctorId)
         {
             // We pass the string ID directly to the query we just created
@@ -86,6 +89,22 @@ namespace FileService.Api.Controllers
         {
             var result = await _mediator.Send(new GetAllFoldersQuery());
             return Ok(result);
+        }
+        [HttpPut("update/{id}")]
+        [Authorize(Policy = "ManagerOnly")]
+        public async Task<IActionResult> Update(Guid id, [FromBody] UpdateFolderRequest request)
+        {
+            var command = new UpdateFolderCommand(
+                Id: id,
+                Name: request.Name,
+                Type: request.Type,
+                PatientId: request.PatientId, // 👈 Pass it through
+                DoctorId: request.DoctorId    // 👈 Pass it through
+            );
+
+            await _mediator.Send(command);
+
+            return NoContent();
         }
     }
 }

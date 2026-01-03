@@ -73,6 +73,8 @@ namespace FileService.Application.Features.Folders.Queries
                 JsonSerializer.Serialize(folder),
                 CacheOptions,
                 cancellationToken);
+            await _cache.RemoveAsync("folders:all", cancellationToken);
+            
 
             return folder;
         }
