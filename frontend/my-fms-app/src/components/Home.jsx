@@ -189,14 +189,14 @@ const Home = () => {
                     <div className='flex items-center space-x-4'>
                         <div className='flex flex-col items-start justify-center gap-1'>
                             <h1 className='text-2xl font-bold text'>
-                                {selectedPage === 'dashboard' && "Operations Dashboard"}
+                                {selectedPage === 'dashboard' && `Welcome back, ${user?.role}`}
                                 {selectedPage === 'doctors' && "Doctors"}
                                 {selectedPage === 'patients' && "Patients"}
                                 {selectedPage === 'files' && "Folders"}
                                 {selectedPage === "usersManagement" && "Users management"}
                             </h1>
                             <p className='text-sm font-medium text-gray-500'>
-                                {selectedPage === 'dashboard' && "Realtime monitoring & management"}
+                                {selectedPage === 'dashboard' && "Overview of system-wide clinical operations and file management"}
                                 {selectedPage === 'patients' && "Manage patients profiles"}
                                 {selectedPage === 'files' && "Manage and track all folders & files"}
                                 {selectedPage === 'doctors' && "Manage doctors profile"}

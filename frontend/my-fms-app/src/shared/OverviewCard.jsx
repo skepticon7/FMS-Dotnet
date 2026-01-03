@@ -16,6 +16,14 @@ const OverviewCard = ({Icon , title , subtitle ,description , color}) => {
             bg: "bg-purple-100",
             text: "text-purple-600",
         },
+        green : {
+            bg : 'bg-green-100',
+            text: "text-green-600",
+        },
+        orange : {
+            bg : "bg-orange-100",
+            text: "text-orange-600",
+        },
         emerald: {
             bg: "bg-emerald-100",
             text: "text-emerald-600",

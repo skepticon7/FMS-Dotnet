@@ -701,6 +701,49 @@ export const getFileHistory = async (page = 1, size = 10) => {
     }
 }
 
+export const getLatestManagerFiles = async () => {
+
+}
+
+export const getLatestDoctorFiles = async (doctorId) => {
+
+}
+
+export const getManagerDashboardStats = async () => {
+
+}
+
+export const getDoctorDashboardStats = async (doctorId) => {
+
+}
+
+export const getDashboardPageData = async (userId , role) => {
+    let getFilesFn , getStatsFn;
+    switch (role) {
+        case 'Manager' :
+            getFilesFn = () => getLatestManagerFiles();
+            getStatsFn = () => getStatsFn();
+            break;
+        case 'Doctor' :
+            getFilesFn = () => getDoctorDashboardStats(userId);
+            getStatsFn = () => getDoctorDashboardStats(userId);
+            break;
+
+        default:
+            throw new Error("Invalid Role");
+    }
+
+    const [filesResponse , statsResponse] = await axios.all([
+        getFilesFn , getStatsFn
+    ]);
+
+    return {
+        files : filesResponse.data,
+        stats : statsResponse.data
+    };
+
+}
+
 
 export const getSuperuser = async (superuserId) => {
     try {
