@@ -33,7 +33,7 @@ import {
   Trash,
   Droplet,
     Microscope,
-  User2, MoreVertical, X, UserPlus
+  User2, MoreVertical, X, UserPlus,
 } from "lucide-react";
 import {formatLabel} from "../Utils/formatLabel.js";
 import {useAuth} from "../context/AuthContext.jsx";

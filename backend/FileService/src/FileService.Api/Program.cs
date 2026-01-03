@@ -5,6 +5,7 @@ using FileService.Api.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Microsoft.Extensions.FileProviders; // Keep this
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -183,6 +184,15 @@ app.MapGet("/weatherforecast", () =>
         return forecast;
     })
     .WithName("GetWeatherForecast");
+
+var currentDirectory = Directory.GetCurrentDirectory();
+var wwwrootPath = Path.Combine(currentDirectory, "wwwroot");
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(wwwrootPath),
+    RequestPath = "",
+    ServeUnknownFileTypes = true // Helps with files like .config or no extension
+});
 
 app.UseAuthentication(); // 👈 Must be BEFORE UseAuthorization
 app.UseAuthorization();

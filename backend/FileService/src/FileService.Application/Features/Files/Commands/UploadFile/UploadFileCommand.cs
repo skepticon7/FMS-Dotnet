@@ -13,7 +13,7 @@ namespace FileService.Application.Features.Files.Commands.UploadFile
         Guid FolderId,
         IFormFile File,
         MedicalFileType FileType,
-        string UploadedBy,
+        string? UploadedBy,
         string? Notes
     ) : IRequest<Guid>;
 
@@ -118,9 +118,11 @@ namespace FileService.Application.Features.Files.Commands.UploadFile
             {
                 await _cache.RemoveAsync($"folders:doctor:{folder.DoctorId}", cancellationToken);
             }
+            
 
             // 3. (Optional) Clear the specific folder cache if you have a "GetFolderById" query cached
             await _cache.RemoveAsync($"folder:{request.FolderId}", cancellationToken);
+            await _cache.RemoveAsync($"files:folder:{request.FolderId}", cancellationToken);
             
             return newFileEntry.Id;
         }

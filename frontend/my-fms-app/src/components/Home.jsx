@@ -189,7 +189,7 @@ const Home = () => {
                                 {selectedPage === 'dashboard' && "Operations Dashboard"}
                                 {selectedPage === 'doctors' && "Doctors"}
                                 {selectedPage === 'patients' && "Patients"}
-                                {selectedPage === 'files' && "Files"}
+                                {selectedPage === 'files' && "Folders"}
                                 {selectedPage === "usersManagement" && "Users management"}
                             </h1>
                             <p className='text-sm font-medium text-gray-500'>
