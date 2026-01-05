@@ -71,7 +71,7 @@ import {toast} from "react-hot-toast";
 
 
 const Dashboard = () => {
-    const {user} = useAuth();
+    const {user  , setSelectedPage} = useAuth();
     const [loading , setLoading] = useState(false);
     const [err , setError] = useState(null);
     const [statFilter , setStatsFilter] = useState('first')
@@ -224,113 +224,6 @@ const Dashboard = () => {
                                         />
                 </div>
 
-                {/*{(interventionsStats.length !== 0 && sitesStats.length !== 0) && (*/}
-                {/*    <div className='grid grid-cols-2 gap-5 w-full mt-5'>*/}
-                {/*        <div*/}
-                {/*            className='border border-[1px] bg-white border-gray-300 rounded-lg flex flex-col  gap-5 w-full p-5'>*/}
-                {/*            <div className='flex items-center justify-between '>*/}
-                {/*                <div>*/}
-                {/*                    <p className='text-2xl font-bold'>Performance Trends</p>*/}
-                {/*                    <p className='text-gray-500 text-sm'>Monthly workload distribution</p>*/}
-                {/*                </div>*/}
-                {/*                <div>*/}
-                {/*                    <Select*/}
-                {/*                        value={statFilter}*/}
-                {/*                        onValueChange={(value) => setStatsFilter(value)}*/}
-                {/*                    >*/}
-                {/*                        <SelectTrigger*/}
-                {/*                            className='w-full py-5  rounded-md hover:bg-gray-50 transition-colors duration-200'>*/}
-                {/*                            <SelectValue*/}
-                {/*                                placeholder="Select technician status"/>*/}
-                {/*                        </SelectTrigger>*/}
-                {/*                        <SelectContent>*/}
-                {/*                            <SelectItem className='font-medium' key="first" value="first">Jan → Jun</SelectItem>*/}
-                {/*                            <SelectItem className='font-medium' key="second" value="second">Jul → Dec</SelectItem>*/}
-                {/*                        </SelectContent>*/}
-                {/*                    </Select>*/}
-                {/*                </div>*/}
-                {/*            </div>*/}
-                {/*            <div className='flex items-center justify-center  h-full'>*/}
-                {/*                <ChartContainer*/}
-                {/*                    config={{}}*/}
-                {/*                    className="h-[400px] self-center">*/}
-                {/*                    {filteredInterventionsStats.length > 0 ? (*/}
-                {/*                        <ResponsiveContainer width="100%" height="100%">*/}
-                {/*                            <BarChart*/}
-                {/*                                data={filteredInterventionsStats}*/}
-                {/*                                margin={{ top: 20, right: 30, left: 0, bottom: 5 }}*/}
-                {/*                            >*/}
-                {/*                                <CartesianGrid strokeDasharray="3 3" />*/}
-                {/*                                <XAxis dataKey="month" />*/}
-                {/*                                <YAxis />*/}
-                {/*                                <Tooltip />*/}
-                {/*                                <Legend />*/}
-                {/*                                <Bar dataKey="scheduled" stackId="a" fill="#a855f7" />*/}
-                {/*                                <Bar dataKey="in_progress" stackId="a" fill="#3b82f6" />*/}
-                {/*                                <Bar dataKey="completed" stackId="a" fill="#22c55e" />*/}
-                {/*                            </BarChart>*/}
-                {/*                        </ResponsiveContainer>*/}
-                {/*                    ) : (*/}
-                {/*                        <p className="text-center text-gray-500 py-10">No data for selected period</p>*/}
-                {/*                    )}*/}
-                {/*                </ChartContainer>*/}
-
-                {/*            </div>*/}
-
-
-                {/*        </div>*/}
-
-                {/*        <div*/}
-                {/*            className='border border-[1px] bg-white border-gray-300 rounded-lg flex flex-col gap-5 w-full p-5'>*/}
-                {/*            <div>*/}
-                {/*                <p className='text-2xl font-bold'>Sites Distribution</p>*/}
-                {/*                <p className='text-gray-500 text-sm'>Share of interventions by sites</p>*/}
-                {/*            </div>*/}
-                {/*            <ChartContainer*/}
-                {/*                config={{ value: { label: "Interventions", color: "#00bf40" } }}*/}
-                {/*                className="h-[300px]"*/}
-                {/*            >*/}
-                {/*                <ResponsiveContainer width="100%" height="100%">*/}
-                {/*                    <PieChart>*/}
-                {/*                        <Pie*/}
-                {/*                            data={sitesStats}*/}
-                {/*                            innerRadius={60}*/}
-                {/*                            outerRadius={100}*/}
-                {/*                            paddingAngle={4}*/}
-                {/*                            dataKey="count"*/}
-                {/*                            nameKey="siteName"*/}
-                {/*                        >*/}
-                {/*                            {sitesStats.map((d, i) => (*/}
-                {/*                                <Cell key={i} fill={d.color} />*/}
-                {/*                            ))}*/}
-                {/*                        </Pie>*/}
-                {/*                        <ChartTooltip*/}
-                {/*                            content={<ChartTooltipContent />}*/}
-                {/*                            formatter={(value, name) => [`${value} interventions at `, name]}*/}
-                {/*                        />*/}
-                {/*                    </PieChart>*/}
-                {/*                </ResponsiveContainer>*/}
-                {/*            </ChartContainer>*/}
-                {/*            <div className="mt-4 space-y-2">*/}
-                {/*                {sitesStats.map((d) => {*/}
-                {/*                    const total = sitesStats.reduce((sum, item) => sum + item.count, 0);*/}
-                {/*                    const percentage = total > 0 ? ((d.count / total) * 100).toFixed(1) : 0;*/}
-
-                {/*                    return (*/}
-                {/*                        <div key={d.siteName} className="flex flex-col text-sm">*/}
-                {/*                            <div className="flex items-center space-x-2">*/}
-                {/*                                <span className="w-3 h-3 rounded-full"*/}
-                {/*                                      style={{backgroundColor: d.color}}/>*/}
-                {/*                                <span>{d.siteName}</span>*/}
-                {/*                                <span className='font-bold'>{percentage}%</span>*/}
-                {/*                            </div>*/}
-                {/*                        </div>*/}
-                {/*                    );*/}
-                {/*                })}*/}
-                {/*            </div>*/}
-                {/*        </div>*/}
-                {/*    </div>*/}
-                {/*)}*/}
 
                 <Card
                     className=' bg-white  rounded-lg flex flex-col gap-5 w-full p-5 mt-5'>
@@ -343,12 +236,7 @@ const Dashboard = () => {
 
 
                             <button
-                                onClick={() => {
-                                    setOpenModal(true);
-                                    setOpenedIntervention(-1);
-                                    setViewOnly(false);
-                                    setActionsDropDown(false);
-                                }}
+                                onClick={() => setSelectedPage("files")}
                                 className='flex gap-2 w-full cursor-pointer items-center justify-center rounded-md py-2 px-3 bg-main-green transition-colors duration-200 hover:bg-main-green/60'>
                                 <Eye className='w-5 h-5 text-white'/>
                                 <p className='text-sm font-semibold text-white'>View All</p>
@@ -409,14 +297,16 @@ const Dashboard = () => {
                                                     >
                                                         <Download className="size-4" />
                                                     </Button>
-                                                    <Button
-                                                        variant="outline"
-                                                        size="icon"
-                                                        className="size-9 rounded-xl border-slate-200 hover:border-red-500 hover:text-red-600 bg-white"
-                                                        onClick={() => setFileToDelete(file)} // Just set state, don't delete yet
-                                                    >
-                                                        <Trash2 className="size-4" />
-                                                    </Button>
+                                                    {role === 'Manager' && (
+                                                        <Button
+                                                            variant="outline"
+                                                            size="icon"
+                                                            className="size-9 rounded-xl border-slate-200 hover:border-red-500 hover:text-red-600 bg-white"
+                                                            onClick={() => setFileToDelete(file)} // Just set state, don't delete yet
+                                                        >
+                                                            <Trash2 className="size-4" />
+                                                        </Button>
+                                                    )}
                                                 </div>
                                             </TableCell>
                                         </TableRow>

@@ -391,6 +391,7 @@ const DoctorCard = ({doctor  ,role , onView , onEdit}) => {
 const Doctor = () => {
   const [doctors, setDoctors] = useState([]);
   const [doctorStats , setDoctorStats] = useState(null);
+  const [totalCount , setTotalCount] = useState(0);
   const [filterOptions, setFilterOptions] = useState({
     gender : "",
     speciality : "",
@@ -477,6 +478,7 @@ const Doctor = () => {
       ]);
       setDoctorStats(doctorStatsResponse.data);
       setDoctors(doctorsResponse.data.items);
+      setTotalCount(doctorsResponse.data.totalCount);
     }catch (e) {
       console.error("Error fetching doctors:", e);
       setError(`Error fetching doctors: ${e}`);
@@ -533,23 +535,30 @@ const Doctor = () => {
                     <p className='text-md text-white font-medium'>Create Doctor</p>
                   </button>
               )}
-              {doctorStats && <DoctorsOverview doctorsStats={doctorStats}/>}
+              {totalCount !== 0 && (
+                  <>
+                    <DoctorsOverview doctorsStats={doctorStats}/>
+                    <SearchBarFilter
+                        filterOptions={filterOptions}
+                        setFilterOptions={setFilterOptions}
+                        advancedFilterOptions={advancedFilterOptions}
+                        setAdvancedFilterOptions={setAdvancedFilterOptions}
+                        resetAllFilters={handleResetAllFilters}
+                    />
+                  </>
+              )}
 
-              <SearchBarFilter
-                  filterOptions={filterOptions}
-                  setFilterOptions={setFilterOptions}
-                  advancedFilterOptions={advancedFilterOptions}
-                  setAdvancedFilterOptions={setAdvancedFilterOptions}
-                  resetAllFilters={handleResetAllFilters}
-              />
 
-              {filteredDoctors.length === 0 ? (
+
+              {totalCount === 0 ? (
                   <div className='flex flex-col items-center justify-center w-full py-30'>
                     <UserX className="w-16 h-16 text-red-600 mb-4"/>
-                      <h2 className="text-2xl font-bold text-red-700 mb-2">No Doctors</h2>
-                    <p className="text-red-600 text-center">
-                      Create a doctor to get started or try adjusting your filters.
-                    </p>
+                    <h2 className="text-2xl font-bold text-red-700 mb-2">No Doctors</h2>
+                    {role === 'Manager' && (
+                        <p className="text-red-600 text-center">
+                          Create a doctor to get started or try adjusting your filters.
+                        </p>
+                    )}
                   </div>
               ) : (
                   <div className='grid grid-cols-3 gap-5 w-full'>
@@ -557,10 +566,20 @@ const Doctor = () => {
                         <DoctorCard
                             doctor={patient}
                             role={role}
-                            onView={() => handleOpenModal(patient.id , true , false)}
+                            onView={() => handleOpenModal(patient.id, true, false)}
                             onEdit={() => handleOpenModal(patient.id, false, true)}
                         />
                     ))}
+                  </div>
+              )}
+
+              {filteredDoctors.length === 0 && (
+                  <div className='flex flex-col items-center justify-center w-full py-20'>
+                    <UserX className="w-16 h-16 text-red-600 mb-4"/>
+                    <h2 className="text-2xl font-bold text-red-700 mb-2">No Doctors</h2>
+                    <p className="text-red-600 text-center">
+                      No doctors on this page. Try previous page.
+                    </p>
                   </div>
               )}
             </>

@@ -73,7 +73,8 @@ public static class DependencyInjection
         {
             options.Configuration = configuration["DefaultConnections:redis"];
         });
-        
+
+        services.AddHttpContextAccessor();
         services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(configuration["DefaultConnections:redis"]!));
             
         return services;

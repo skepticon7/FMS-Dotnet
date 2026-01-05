@@ -15,6 +15,8 @@ public class GetPatientsStatsByDoctorIdHandler(
     {
         var patientsIds = await _fileServiceClient.GetPatientIdsByDoctorAsync(request.DoctorId);
 
-        return await _patientRepository.GetPatientsStats(patientsIds, cancellationToken);
+        Console.WriteLine("here in handler , patientIds : " + patientsIds.Count);
+        
+        return await _patientRepository.GetPatientsStatsForDoctor(patientsIds, cancellationToken);
     }
 }

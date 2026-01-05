@@ -1,4 +1,5 @@
-﻿using UserService.Application.DTOs;
+﻿using System.Net.Http.Headers;
+using UserService.Application.DTOs;
 using UserService.Application.Features.Patients.Queries.GetPatients;
 using UserService.Domain.Entities;
 
@@ -15,8 +16,8 @@ public interface IPatientRepository
     Task<(IReadOnlyList<Patient>, int totalCount)> GetPatientsAsync(List<long>? patientIds , GetPatientsQuery query,
         CancellationToken cancellationToken = default);
     
-    Task<PatientStatsDTO> GetPatientsStats(List<long>? patientIds , CancellationToken cancellationToken = default);
-
-    Task<int> GetPatientsCount(CancellationToken cancellationToken = default);
+    Task<PatientStatsDTO> GetPatientsStats(CancellationToken cancellationToken = default);
+    
+    Task<PatientStatsDTO> GetPatientsStatsForDoctor(List<long> patientIds , CancellationToken cancellationToken = default);
 
 }

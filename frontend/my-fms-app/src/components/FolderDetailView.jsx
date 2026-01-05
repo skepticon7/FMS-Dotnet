@@ -12,6 +12,7 @@ import FileDeleteConfirmationModal from "./FileDeleteConfirmationModal.jsx"; // 
 import { toast } from "react-hot-toast";
 import {formatFileSize} from "@/Utils/formatFileSize.js";
 import {getFileTypeLabel} from "@/Utils/getFileTypeLabel.js";
+import {useAuth} from "@/context/AuthContext.jsx";
 // 1. Helper to Map Enum Integers to Strings
 
 
@@ -35,6 +36,7 @@ function StatItem({ icon: Icon, label, value }) {
 
 export function FolderDetailView({ folder, onBack }) {
     const [files, setFiles] = useState([]);
+    const {user} = useAuth();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [previewFile, setPreviewFile] = useState(null);
@@ -44,6 +46,7 @@ export function FolderDetailView({ folder, onBack }) {
     // State for Names
     const [doctorName, setDoctorName] = useState("Loading...");
     const [patientName, setPatientName] = useState("Loading...");
+    const role = user?.role;
 
 
     const fetchFilesOnly = async () => {
@@ -260,14 +263,17 @@ export function FolderDetailView({ folder, onBack }) {
                                         >
                                             <Download className="size-4" />
                                         </Button>
-                                        <Button
-                                            variant="outline"
-                                            size="icon"
-                                            className="size-9 rounded-xl border-slate-200 hover:border-red-500 hover:text-red-600 bg-white"
-                                            onClick={() => setFileToDelete(file)} // Just set state, don't delete yet
-                                        >
-                                            <Trash2 className="size-4" />
-                                        </Button>
+                                        {role === 'Manager' && (
+                                            <Button
+                                                variant="outline"
+                                                size="icon"
+                                                className="size-9 rounded-xl border-slate-200 hover:border-red-500 hover:text-red-600 bg-white"
+                                                onClick={() => setFileToDelete(file)} // Just set state, don't delete yet
+                                            >
+                                                <Trash2 className="size-4" />
+                                            </Button>
+                                        )}
+
                                     </div>
                                 </TableCell>
                             </TableRow>

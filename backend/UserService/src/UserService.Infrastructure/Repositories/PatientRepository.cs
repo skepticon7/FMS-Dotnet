@@ -87,11 +87,11 @@ public class PatientRepository(UserDbContext _context) : IPatientRepository
         return (items, totalCount);
     }
 
-    public async Task<PatientStatsDTO> GetPatientsStats(List<long>? patientIds , CancellationToken cancellationToken)
+    public async Task<PatientStatsDTO> GetPatientsStatsForDoctor(List<long> patientIds , CancellationToken cancellationToken)
     {
         var patients = _context.Patients.AsNoTracking()
             .Where(p => !p.IsDeleted &&
-                        (patientIds == null || !patientIds.Any() || patientIds.Contains(p.Id)));
+                        patientIds.Contains(p.Id));
         
         var totalPatients = await patients.CountAsync(cancellationToken);
 
@@ -144,6 +144,63 @@ public class PatientRepository(UserDbContext _context) : IPatientRepository
             GenderRatioFemale = femalePercentage
         };
 
+    }
+
+    public async Task<PatientStatsDTO> GetPatientsStats(CancellationToken cancellationToken = default)
+    {
+         var patients = _context.Patients.AsNoTracking()
+            .Where(p => !p.IsDeleted);
+        
+        var totalPatients = await patients.CountAsync(cancellationToken);
+
+        if (totalPatients == 0)
+        {
+            return new PatientStatsDTO();
+        }
+
+        var commonBT = await patients
+            .GroupBy(p => p.BloodType)
+            .Select(g => new
+            {
+                BloodType = g.Key,
+                Count = g.Count()
+            })
+            .OrderByDescending(x => x.Count)
+            .FirstAsync(cancellationToken);
+        
+        
+        var commonBTPourcentage = (int)Math.Round(
+            (double)commonBT.Count * 100 / totalPatients
+        );
+
+        var now = DateTime.UtcNow;
+        var patientsThisMonth = await patients.CountAsync(
+            p => p.CreatedAt.Year == now.Year && p.CreatedAt.Month == now.Month, cancellationToken: cancellationToken);
+        
+        var today = DateTime.UtcNow;
+
+        var averageAge = await patients
+            .Select(p => EF.Functions.DateDiffYear(p.BirthDate, now))
+            .AverageAsync(cancellationToken);
+
+        
+        var maleCount = await patients.CountAsync(p => p.Gender == Gender.Male, cancellationToken);
+        var femaleCount = await patients.CountAsync(p => p.Gender == Gender.Female, cancellationToken);
+        
+        var malePercentage = (int)Math.Round((double)maleCount * 100 / totalPatients);
+        var femalePercentage = (int)Math.Round((double)femaleCount * 100 / totalPatients);
+
+        Console.Write(commonBT.BloodType);
+        
+        return new PatientStatsDTO
+        {
+            MostCommonBloodType = commonBT.BloodType.ToString(),
+            MostCommonBTPourcentage = commonBTPourcentage,
+            PatientsThisMonth = patientsThisMonth,
+            AverageAge = (int)Math.Round((double)averageAge!),
+            GenderRatioMale = malePercentage,
+            GenderRatioFemale = femalePercentage
+        };
     }
 
     public async Task<int> GetPatientsCount(CancellationToken cancellationToken = default)
