@@ -1,6 +1,5 @@
 ﻿using FileService.Application.Features.Files.Commands.UploadFile;
 using FileService.Application.Features.Files.Queries.GetFileById;
-using FileService.Application.Features.Files.Queries.GetFileHistory;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using FileService.Application.Features.Files.Commands.DeleteFile;
@@ -8,8 +7,8 @@ using FileService.Application.Features.Files.Commands.UpdateFile;
 using FileService.Application.Features.Files.Queries.GetAllFiles;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using FileService.Application.Features.Files.Queries.GetFileById.GatDashboardFiles;
 using FileService.Application.Features.Files.Queries.GetFilesByFolderId;
-using FileService.Application.Features.Files.Queries.GetPaginatedFileHistory;
 
 namespace FileService.Api.Controllers
 {
@@ -38,7 +37,6 @@ namespace FileService.Api.Controllers
         // -----------------------------
 
         [HttpPost("upload")]
-        [Authorize(Policy = "ManagerOnly")]
         public async Task<IActionResult> Upload([FromForm] UploadFileCommand command)
         {
            
@@ -58,7 +56,6 @@ namespace FileService.Api.Controllers
         }
 
         [HttpDelete("delete/{id:guid}")]
-        [Authorize(Policy = "ManagerOnly")]
         public async Task<IActionResult> Delete(
             Guid id,
             [FromQuery] string? notes)
@@ -75,7 +72,6 @@ namespace FileService.Api.Controllers
         }
 
         [HttpPut("update/{id:guid}")]
-        [Authorize(Policy = "ManagerOnly")]
         public async Task<IActionResult> Update(
             Guid id,
             [FromBody] UpdateFileRequest request)
@@ -109,25 +105,14 @@ namespace FileService.Api.Controllers
             // Returns 200 OK with the list (even if empty)
             return Ok(files);
         }
-        
-        [HttpGet("history/recent")]
-        [Authorize(Policy = "ManagerOnly")]
 
-        public async Task<IActionResult> GetRecentHistory()
+
+        [HttpGet("getDashboardFiles")]
+        [Authorize("ManagerOrDoctor")]
+        public async Task<IActionResult> GetDashboardFiles([FromQuery] long? id)
         {
-            // Just send the query, the Handler does the heavy lifting (Redis + DB)
-            var history = await _mediator.Send(new GetRecentFileHistoryQuery());
-            return Ok(history);
-        }
-        
-        [HttpGet("history")]
-        public async Task<IActionResult> GetHistory(
-            [FromQuery] int page = 1, 
-            [FromQuery] int size = 10) // <--- Ensure this default is 10, not 1
-        {
-            var query = new GetPaginatedFileHistoryQuery(page, size);
-            var result = await _mediator.Send(query);
-            return Ok(result);
+            Console.WriteLine("here : " + id);
+            return Ok(await _mediator.Send(new GetDashboardFiles.GetDashboardFilesQuery(id)));
         }
         
     }

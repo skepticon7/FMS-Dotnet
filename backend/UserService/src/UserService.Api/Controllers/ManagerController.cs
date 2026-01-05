@@ -5,6 +5,7 @@ using UserService.Application.Features.Managers.Commands.CreateManager;
 using UserService.Application.Features.Managers.Commands.DeleteManager;
 using UserService.Application.Features.Managers.Commands.UpdateManager;
 using UserService.Application.Features.Managers.Queries.GetManagerById;
+using UserService.Application.Features.Stats.Queries;
 
 namespace UserService.Api.Controllers;
 
@@ -44,6 +45,14 @@ public class ManagerController(IMediator mediator) : ControllerBase
     {
         var deletedManager = await _mediator.Send(new DeleteManagerCommand(id));
         return Ok(deletedManager);
+    }
+    
+    
+    [Authorize(Policy = "ManagerOnly")]
+    [HttpGet("getManagerDashboardStat")]
+    public async Task<IActionResult> GetManagerDashboardStats(long id)
+    {
+        return Ok(await _mediator.Send(new GetManagerDashboardStat.GetManagerDashboardStatQuery()));
     }
     
 }

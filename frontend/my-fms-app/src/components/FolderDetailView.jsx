@@ -10,22 +10,10 @@ import FilePreviewModal from "./FilePreviewModal.jsx";
 import FileUploadModal from "./FileUploadModal.jsx";
 import FileDeleteConfirmationModal from "./FileDeleteConfirmationModal.jsx"; // <-- 1. Import Modal
 import { toast } from "react-hot-toast";
+import {formatFileSize} from "@/Utils/formatFileSize.js";
+import {getFileTypeLabel} from "@/Utils/getFileTypeLabel.js";
 // 1. Helper to Map Enum Integers to Strings
-const getFileTypeLabel = (typeValue) => {
-    const types = {
-        0: "General",
-        1: "Prescription",
-        2: "Lab Report",
-        3: "MRI Scan",
-        4: "X-Ray",
-        5: "CT Scan",
-        6: "Ultrasound",
-        7: "Discharge Summary",
-        8: "Insurance Document"
-    };
-    // Return the label, or the original value if not found (fallback)
-    return types[typeValue] || "Unknown";
-};
+
 
 function StatItem({ icon: Icon, label, value }) {
     return (
@@ -50,12 +38,13 @@ export function FolderDetailView({ folder, onBack }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [previewFile, setPreviewFile] = useState(null);
+    const [isUploadOpen, setIsUploadOpen] = useState(false);
+    const [fileToDelete, setFileToDelete] = useState(null);
+    const [isDeleting, setIsDeleting] = useState(false);
     // State for Names
     const [doctorName, setDoctorName] = useState("Loading...");
     const [patientName, setPatientName] = useState("Loading...");
-    const [isUploadOpen, setIsUploadOpen] = useState(false);
-    const [fileToDelete, setFileToDelete] = useState(null); 
-    const [isDeleting, setIsDeleting] = useState(false);
+
 
     const fetchFilesOnly = async () => {
         try {
@@ -154,7 +143,7 @@ export function FolderDetailView({ folder, onBack }) {
 
     // Derived Stats
     const totalSize = files.reduce((acc, file) => acc + (file.size || 0), 0);
-    const formattedSize = (totalSize / (1024 * 1024)).toFixed(2) + " MB";
+    const formattedSize = formatFileSize(totalSize)
     const latestActivity = files.length > 0
         ? new Date(Math.max(...files.map((f) => new Date(f.uploadedAt).getTime())))
         : new Date(folder.createdAt);

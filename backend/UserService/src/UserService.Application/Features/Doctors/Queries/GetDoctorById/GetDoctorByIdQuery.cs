@@ -4,4 +4,4 @@ using UserService.Application.DTOs;
 
 namespace UserService.Application.Features.Doctors.Queries.GetDoctorById;
 
-public record GetDoctorByIdQuery(long Id) : IQuery<DoctorDTO> , ICachedQuery;
+public record GetDoctorByIdQuery(long? Id) : IQuery<DoctorDTO> , ICachedQuery;

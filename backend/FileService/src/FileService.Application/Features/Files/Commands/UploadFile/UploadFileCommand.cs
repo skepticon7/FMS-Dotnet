@@ -6,6 +6,7 @@ using FileService.Domain.Entities;
 using FileService.Domain.Enums;
 using Microsoft.Extensions.Caching.Distributed;
 using FileService.Application.Common.Exceptions;
+using FileService.Application.Features.FilesFoldersStats.Queries;
 
 namespace FileService.Application.Features.Files.Commands.UploadFile
 {
@@ -119,7 +120,9 @@ namespace FileService.Application.Features.Files.Commands.UploadFile
                 await _cache.RemoveAsync($"folders:doctor:{folder.DoctorId}", cancellationToken);
             }
             
-
+        
+            
+            
             // 3. (Optional) Clear the specific folder cache if you have a "GetFolderById" query cached
             await _cache.RemoveAsync($"folder:{request.FolderId}", cancellationToken);
             await _cache.RemoveAsync($"files:folder:{request.FolderId}", cancellationToken);

@@ -8,7 +8,7 @@ public interface IPatientRepository
 {
     Task<Patient> CreatePatientAsync(Patient patient , CancellationToken cancellationToken = default);
     Task<Patient> UpdatePatientAsync(Patient patient , CancellationToken cancellationToken = default);
-    Task<Patient?> GetPatientByIdAsync(long id , CancellationToken cancellationToken = default);
+    Task<Patient?> GetPatientByIdAsync(long? id, CancellationToken cancellationToken = default);
     Task<Patient?> GetPatientByEmailAsync(string email , CancellationToken cancellationToken = default);
     Task<Patient> DeletePatientAsync(Patient patient , CancellationToken cancellationToken = default);
 
@@ -16,5 +16,7 @@ public interface IPatientRepository
         CancellationToken cancellationToken = default);
     
     Task<PatientStatsDTO> GetPatientsStats(List<long>? patientIds , CancellationToken cancellationToken = default);
+
+    Task<int> GetPatientsCount(CancellationToken cancellationToken = default);
 
 }

@@ -1,3 +1,3 @@
 ﻿namespace Contracts.Users;
 
-public record ValidateUsersRequest(long DoctorId , long PatientId );
+public record ValidateUsersRequest(long? DoctorId , long? PatientId );

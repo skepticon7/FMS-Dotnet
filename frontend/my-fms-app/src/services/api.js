@@ -701,49 +701,96 @@ export const getFileHistory = async (page = 1, size = 10) => {
     }
 }
 
-export const getLatestManagerFiles = async () => {
 
+
+export const getDoctorOrManagerFileStats = async (doctorId = null) => {
+    const params = new URLSearchParams();
+    if(doctorId !== null) params.append("id" , doctorId);
+    try{
+        return await axios.get(`${apiGateway}/file-service/api/stats/getManagerOrDoctorFilesAndFoldersStats` , {params , ...getAuthConfig()});
+    } catch (e) {
+        throw e;
+    }
 }
 
-export const getLatestDoctorFiles = async (doctorId) => {
-
+export const getManagerDashboardDoctorsStat = async () => {
+    try{
+        return await axios.get(`${apiGateway}/user-service/api/manager/getManagerDashboardStat` , {...getAuthConfig()});
+    }catch (e) {
+        throw e;
+    }
 }
 
-export const getManagerDashboardStats = async () => {
-
+export const getDoctorDashboardPatientsStat = async (doctorId) => {
+    try{
+        return await axios.get(`${apiGateway}/user-service/api/doctor/getDoctorDashboardStat/${doctorId}` , {...getAuthConfig()});
+    }catch (e) {
+        throw e;
+    }
 }
 
-export const getDoctorDashboardStats = async (doctorId) => {
 
+
+export const getDashboardStats = async (userId , role) => {
+    switch (role) {
+        case 'Manager': {
+            const [fileStatsResponse, userStatResponse] = await axios.all([
+                getDoctorOrManagerFileStats(),
+                getManagerDashboardDoctorsStat()
+            ]);
+            return { filesStats : fileStatsResponse.data , usersStats : userStatResponse.data };
+        }
+        case 'Doctor': {
+            const [fileStatsResponse, userStatResponse] = await axios.all([
+                getDoctorOrManagerFileStats(userId),
+                getDoctorDashboardPatientsStat(userId)
+            ]);
+            return { filesStats : fileStatsResponse.data , usersStats : userStatResponse.data };
+        }
+        default:
+            throw new Error("Invalid role");
+    }
+};
+
+
+export const getDashboardFiles = async (doctorId = null) => {
+    const params = new URLSearchParams();
+    if(doctorId !== null) params.append("id" , doctorId);
+    try {
+        return await axios.get(`${apiGateway}/file-service/api/file/getDashboardFiles` , {params , ...getAuthConfig()});
+    } catch (e) {
+        throw e;
+    }
 }
 
 export const getDashboardPageData = async (userId , role) => {
-    let getFilesFn , getStatsFn;
+    let getFilesFn;
     switch (role) {
-        case 'Manager' :
-            getFilesFn = () => getLatestManagerFiles();
-            getStatsFn = () => getStatsFn();
+        case 'Manager':
+            getFilesFn = () => getDashboardFiles();
             break;
-        case 'Doctor' :
-            getFilesFn = () => getDoctorDashboardStats(userId);
-            getStatsFn = () => getDoctorDashboardStats(userId);
+        case 'Doctor':
+            getFilesFn = () => getDashboardFiles(userId);
             break;
-
         default:
             throw new Error("Invalid Role");
     }
 
-    const [filesResponse , statsResponse] = await axios.all([
-        getFilesFn , getStatsFn
+    const [filesResponse, statsResponse] = await axios.all([
+        getFilesFn(),
+        getDashboardStats(userId, role)
     ]);
 
+
+
     return {
-        files : filesResponse.data,
-        stats : statsResponse.data
+        files: filesResponse.data,
+        stats: {
+            filesStats: statsResponse.filesStats,
+            usersStats: statsResponse.usersStats
+        }
     };
-
-}
-
+};
 
 export const getSuperuser = async (superuserId) => {
     try {

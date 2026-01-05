@@ -28,7 +28,13 @@ import {
     Trash, ServerCrash, SquarePen , FolderOpen ,FileText , Activity , Database
 } from "lucide-react"
 import { useSearchParams } from 'react-router-dom'
-import {getDashboardPageData, getHomePageData, getInterventionsChartStats, getSitesPie} from "../services/api.js";
+import {
+    deleteFile,
+    getDashboardPageData,
+    getHomePageData,
+    getInterventionsChartStats,
+    getSitesPie
+} from "../services/api.js";
 import {errorNotification} from "../services/notification.js";
 import {useAuth} from "../context/AuthContext.jsx";
 import {formatLabel} from "../Utils/formatLabel.js";
@@ -51,6 +57,17 @@ import {
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import {constructSitesPie} from "@/Utils/ConstructSitesPie.js";
 import OverviewCard from "@/shared/OverviewCard.jsx";
+import {formatFileSize} from "@/Utils/formatFileSize.js";
+import {Card} from "@/components/ui/card.js";
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table.jsx";
+import {Badge} from "@/components/ui/badge.js";
+import {format} from "date-fns";
+import {Button} from "@/components/ui/button.js";
+import {getFileTypeLabel} from "@/Utils/getFileTypeLabel.js";
+import FileUploadModal from "@/components/FileUploadModal.jsx";
+import FilePreviewModal from "@/components/FilePreviewModal.jsx";
+import FileDeleteConfirmationModal from "@/components/FileDeleteConfirmationModal.jsx";
+import {toast} from "react-hot-toast";
 
 
 const Dashboard = () => {
@@ -58,6 +75,10 @@ const Dashboard = () => {
     const [loading , setLoading] = useState(false);
     const [err , setError] = useState(null);
     const [statFilter , setStatsFilter] = useState('first')
+    const [previewFile, setPreviewFile] = useState(null);
+    const [isUploadOpen, setIsUploadOpen] = useState(false);
+    const [fileToDelete, setFileToDelete] = useState(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
 
     const [stats , setStats] = useState(null);
@@ -70,15 +91,7 @@ const Dashboard = () => {
 
         try{
             setLoading(true)
-            // const [homePageResponse , siteStatsResponse , interventionStatsResponse] = await axios.all([
-            //     getHomePageData(userId , role) , getSitesPie(role ===  "TECHNICIAN" ? userId : null) , getInterventionsChartStats(userId , role)
-            // ]);
-            //
-            //
-            // setStats(homePageResponse.stats)
-            // setInterventions(homePageResponse.interventions)
-            // setSitesStats(constructSitesPie(siteStatsResponse.data))
-            // setInterventionsStats(interventionStatsResponse.data)
+
             const dashboardResponse = await getDashboardPageData(userId , role);
 
             setStats(dashboardResponse.stats);
@@ -100,12 +113,32 @@ const Dashboard = () => {
     // }, [interventionsStats, statFilter]);
 
 
-    // useEffect(() => {
-    //     if(!user) return;
-    //     fetchHomePageData();
-    //     console.log(sitesStats.length)
-    //     console.log(interventionsStats.length)
-    // } , [user])
+    useEffect(() => {
+        if(!user) return;
+        fetchDashboardData();
+    } , [user])
+
+    const confirmDelete = async (note) => {
+        if (!fileToDelete) return;
+
+        try {
+            setIsDeleting(true);
+            await deleteFile(fileToDelete.id, note); // Pass the note to the API
+            toast.success("File deleted successfully");
+
+            // Close modal and clear selection
+            setFileToDelete(null);
+
+            // Refresh list
+            fetchDashboardData();
+        } catch (error) {
+            console.error("Failed to delete file:", error);
+            toast.error("Failed to delete file");
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
 
 
     const statusStyles = {
@@ -162,18 +195,30 @@ const Dashboard = () => {
             <>
                 <div className='grid grid-cols-4 gap-3'>
                                         <OverviewCard
+                                            title={`${role === 'Manager' ? 'Total Patients Folders' : 'Assigned Folders'}`}
+                                            subtitle={stats?.filesStats?.totalFolders}
+                                            // description={`${role === 'Manager' ? 'Total Patient folders' : 'Patient folders assigned to you'}`}
                                             Icon={FolderOpen}
                                             color={'blue'}
                                         />
                                         <OverviewCard
+                                            title={'Medical File Entries'}
+                                            subtitle={stats?.filesStats?.totalFiles}
+                                            // description={`${role === 'Manager' ? 'Total medical file entries across the system' : 'Files related to your patients'}`}
                                             Icon={FileText}
                                             color={'green'}
                                         />
                                         <OverviewCard
+                                            title={`${role === 'Manager' ? 'Cloud Storage' : 'Data Load'}`}
+                                            subtitle={formatFileSize(stats?.filesStats?.totalSize)}
+                                            // description={`${role === 'Manager' ? 'Total allocated cloud storage' : 'Total size of assigned files'}`}
                                             Icon={Database}
                                             color={'orange'}
                                         />
                                         <OverviewCard
+                                            title={`${role === 'Manager' ? 'Active Doctors' : 'Active Patients'}`}
+                                            subtitle={role === 'Manager' ? stats?.usersStats?.activeDoctors : stats?.usersStats?.activePatients}
+                                            // description={`${role === 'Manager' ? 'Total doctors in the system' : 'Patients under your care'}`}
                                             Icon={Activity}
                                             color={'purple'}
                                         />
@@ -287,125 +332,121 @@ const Dashboard = () => {
                 {/*    </div>*/}
                 {/*)}*/}
 
-                {/*<div*/}
-                {/*    className='border border-[1px] bg-white border-gray-300 rounded-lg flex flex-col gap-5 w-full p-5 mt-5'>*/}
-                {/*    <div className='flex items-start justify-between w-full'>*/}
-                {/*        <div>*/}
-                {/*            <p className='text-2xl font-bold'>Recent Interventions</p>*/}
-                {/*            <p className='text-gray-500 text-sm'>Latest Technician activity</p>*/}
-                {/*        </div>*/}
-                {/*        <div className='flex gap-2'>*/}
+                <Card
+                    className=' bg-white  rounded-lg flex flex-col gap-5 w-full p-5 mt-5'>
+                    <div className='flex items-start justify-between w-full'>
+                        <div>
+                            <p className='text-2xl font-bold'>Recent File Entries</p>
+                            <p className='text-gray-500 text-sm'>Latest Documents submitted</p>
+                        </div>
+                        <div className='flex gap-2'>
 
 
-                {/*            <button*/}
-                {/*                onClick={() => {*/}
-                {/*                    setOpenModal(true);*/}
-                {/*                    setOpenedIntervention(-1);*/}
-                {/*                    setViewOnly(false);*/}
-                {/*                    setActionsDropDown(false);*/}
-                {/*                }}*/}
-                {/*                className='flex gap-3 w-full cursor-pointer items-center justify-center rounded-md p-2 bg-main-green transition-colors duration-200 hover:bg-main-green/60'>*/}
-                {/*                <Plus className='w-5 h-5 text-white'/>*/}
-                {/*                <p className='text-sm font-semibold text-white'>New</p>*/}
-                {/*            </button>*/}
-                {/*        </div>*/}
-                {/*    </div>*/}
-                {/*    <div className='px-4 w-full'>*/}
-                {/*        {interventions.length === 0 ? (*/}
-                {/*                <div className="text-center py-10 text-gray-500 flex flex-col items-center justify-center">*/}
-                {/*                    <Wrench className="w-10 h-10 mb-2 "/>*/}
-                {/*                    <span className="text-xl font-semibold ">No interventions currently</span>*/}
-                {/*                </div>*/}
-                {/*            ) :*/}
-                {/*            (*/}
-                {/*                <table className='border-collapse w-full'>*/}
-                {/*                    <thead>*/}
-                {/*                    <tr className='border-b-[1px] border-gray-300 text-left'>*/}
-                {/*                        <th className='font-bold text-sm py-3 px-2'>Code</th>*/}
-                {/*                        <th className='font-bold text-sm'>Site</th>*/}
-                {/*                        <th className='font-bold text-sm'>Technician</th>*/}
-                {/*                        <th className='font-bold text-sm'>Status</th>*/}
-                {/*                        <th className='font-bold text-sm'>Priority</th>*/}
-                {/*                        <th className='font-bold text-sm'/>*/}
-                {/*                    </tr>*/}
-                {/*                    </thead>*/}
-                {/*                    <tbody>*/}
-                {/*                    {*/}
-                {/*                        interventions.map((int, index) => (*/}
-                {/*                            <tr*/}
-                {/*                                key={int.id || index}*/}
-                {/*                                className={`text-left ${index === interventions.length - 1 ? 'border-none' : 'border-b border-gray-300'}`}*/}
-                {/*                            >*/}
-                {/*                                <td className="font-mono text-sm font-semibold py-4 px-2">{int.code}</td>*/}
-                {/*                                <td className="text-sm py-4">{int.site}</td>*/}
-                {/*                                <td className="text-sm py-4">{int.technician}</td>*/}
-                {/*                                <td className="py-4">*/}
-                {/*                          <span*/}
-                {/*                              className={`text-xs font-semibold py-1 px-2 rounded-full ${statusStyles[formatLabel(int.status)]}`}>*/}
-                {/*                            {formatLabel(int.status)}*/}
-                {/*                          </span>*/}
-                {/*                                </td>*/}
-                {/*                                <td className="py-4">*/}
-                {/*                      <span*/}
-                {/*                          className={`text-xs font-semibold py-1 px-2 rounded-full border ${priorityStyles[formatLabel(int.priority)]}`}>*/}
-                {/*                        {formatLabel(int.priority)}*/}
-                {/*                      </span>*/}
-                {/*                                </td>*/}
-                {/*                                <td className="relative">*/}
-                {/*                                    <button*/}
-                {/*                                        onClick={(e) => {*/}
-                {/*                                            e.stopPropagation();*/}
-                {/*                                            setOpenedIntervention(index);*/}
-                {/*                                            setActionsDropDown((prev) => openedIntervention === index ? !prev : true);*/}
-                {/*                                        }}*/}
-                {/*                                        className="cursor-pointer"*/}
-                {/*                                    >*/}
-                {/*                                        <MoreHorizontal/>*/}
-                {/*                                    </button>*/}
-
-                {/*                                    {actionsDropDown && openedIntervention === index && (*/}
-                {/*                                        <div*/}
-                {/*                                            ref={dropdownRef}*/}
-                {/*                                            className="absolute p-1 z-50 -right-15 shadow-xl top-10 min-w-50 bg-white border border-gray-300 rounded-lg flex flex-col items-start dropdown-animate-down"*/}
-                {/*                                        >*/}
-                {/*                                            <button*/}
-                {/*                                                onClick={() => {*/}
-                {/*                                                    setViewOnly(true);*/}
-                {/*                                                    setOpenModal(true);*/}
-                {/*                                                    setOpenedIntervention(index);*/}
-                {/*                                                    setActionsDropDown(false)*/}
-                {/*                                                }}*/}
-                {/*                                                className="flex items-center gap-5 p-2 w-full hover:bg-gray-100 cursor-pointer rounded-md transition-colors">*/}
-                {/*                                                <Eye className="w-5 h-5 text-black"/>*/}
-                {/*                                                <p className="font-medium text-sm">View Details</p>*/}
-                {/*                                            </button>*/}
-                {/*                                            <button*/}
-                {/*                                                onClick={() => {*/}
-                {/*                                                    setOpenModal(true);*/}
-                {/*                                                    setOpenedIntervention(index);*/}
-                {/*                                                    setViewOnly(false);*/}
-                {/*                                                    setActionsDropDown(false)*/}
-                {/*                                                }}*/}
-                {/*                                                className="flex items-center gap-5 p-2 w-full hover:bg-gray-100 cursor-pointer rounded-md transition-colors">*/}
-                {/*                                                <SquarePen className="w-5 h-5 text-black"/>*/}
-                {/*                                                <p className="font-medium text-sm">Edit Intervention</p>*/}
-                {/*                                            </button>*/}
-
-                {/*                                        </div>*/}
-                {/*                                    )}*/}
-                {/*                                </td>*/}
-                {/*                            </tr>*/}
-                {/*                        ))*/}
-                {/*                    }*/}
-                {/*                    </tbody>*/}
-                {/*                </table>*/}
-                {/*            )*/}
-                {/*        }*/}
+                            <button
+                                onClick={() => {
+                                    setOpenModal(true);
+                                    setOpenedIntervention(-1);
+                                    setViewOnly(false);
+                                    setActionsDropDown(false);
+                                }}
+                                className='flex gap-2 w-full cursor-pointer items-center justify-center rounded-md py-2 px-3 bg-main-green transition-colors duration-200 hover:bg-main-green/60'>
+                                <Eye className='w-5 h-5 text-white'/>
+                                <p className='text-sm font-semibold text-white'>View All</p>
+                            </button>
+                        </div>
+                    </div>
+                    <div className='px-4 w-full'>
+                        <Card className="rounded-lg border-slate-200/60 shadow-xl shadow-slate-200/40 overflow-hidden bg-white/80 backdrop-blur-sm">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow className="bg-slate-50/80 hover:bg-slate-50/80 border-b border-slate-100">
+                                        <TableHead className="py-5 px-6 text-[11px] font-bold uppercase tracking-[0.15em] text-slate-400">File Name</TableHead>
+                                        <TableHead className="py-5 text-[11px] font-bold uppercase tracking-[0.15em] text-slate-400">Type</TableHead>
+                                        <TableHead className="py-5 text-[11px] font-bold uppercase tracking-[0.15em] text-slate-400">Size</TableHead>
+                                        <TableHead className="py-5 text-[11px] font-bold uppercase tracking-[0.15em] text-slate-400">Version</TableHead>
+                                        <TableHead className="py-5 text-[11px] font-bold uppercase tracking-[0.15em] text-slate-400">Uploaded</TableHead>
+                                        <TableHead className="py-5 px-6 text-right text-[11px] font-bold uppercase tracking-[0.15em] text-slate-400">Actions</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {files.map((file) => (
+                                        <TableRow key={file.id} className="group border-b border-slate-100 transition-all hover:bg-emerald-50/30">
+                                            <TableCell className="py-5 px-6 font-bold text-slate-900">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="size-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400 group-hover:bg-emerald-100 group-hover:text-emerald-600 transition-all duration-300">
+                                                        <FileText className="size-5" />
+                                                    </div>
+                                                    {file.fileName}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge variant="secondary" className="font-normal bg-slate-100 text-slate-600 border-none">
+                                                    {/* 2. Use the helper function here */}
+                                                    {getFileTypeLabel(file.fileType)}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="py-5 text-muted-foreground text-sm">{(file.size / 1024).toFixed(1)} KB</TableCell>
+                                            <TableCell className="py-5">
+                                                <span className="text-sm font-medium">v{file.version || 1}</span>
+                                            </TableCell>
+                                            <TableCell className="py-5 text-muted-foreground text-sm">
+                                                {file.uploadedAt ? format(new Date(file.uploadedAt), "MMM d, yyyy") : "N/A"}
+                                            </TableCell>
+                                            <TableCell className="py-5 text-right px-6">
+                                                <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
+                                                    <Button
+                                                        variant="outline"
+                                                        size="icon"
+                                                        className="size-9 rounded-xl border-slate-200 hover:border-emerald-500 hover:text-emerald-600 bg-white"
+                                                        onClick={() => setPreviewFile(file)}
+                                                    >
+                                                        <Eye className="size-4" />
+                                                    </Button>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="icon"
+                                                        className="size-9 rounded-xl border-slate-200 hover:border-emerald-500 hover:text-emerald-600 bg-white"
+                                                    >
+                                                        <Download className="size-4" />
+                                                    </Button>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="icon"
+                                                        className="size-9 rounded-xl border-slate-200 hover:border-red-500 hover:text-red-600 bg-white"
+                                                        onClick={() => setFileToDelete(file)} // Just set state, don't delete yet
+                                                    >
+                                                        <Trash2 className="size-4" />
+                                                    </Button>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                    {files.length === 0 && (
+                                        <TableRow>
+                                            <TableCell colSpan={6} className="h-48 text-center text-muted-foreground">
+                                                No files uploaded to this folder yet.
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </Card>
+                    </div>
+                </Card>
 
 
-                {/*    </div>*/}
-
-                {/*</div>*/}
+                <FilePreviewModal
+                    isOpen={!!previewFile}
+                    file={previewFile}
+                    onClose={() => setPreviewFile(null)}
+                />
+                <FileDeleteConfirmationModal
+                    isOpen={!!fileToDelete}
+                    onClose={() => setFileToDelete(null)}
+                    onConfirm={confirmDelete}
+                    fileName={fileToDelete?.fileName}
+                    loading={isDeleting}
+                />
             </>
         ) }
         {/*<NewIntervention*/}

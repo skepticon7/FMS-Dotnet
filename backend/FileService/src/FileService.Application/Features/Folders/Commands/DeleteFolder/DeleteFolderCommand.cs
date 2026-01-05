@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using FileService.Application.Common.Interfaces;
 using FileService.Application.Common.Exceptions;
+using FileService.Application.Features.FilesFoldersStats.Queries;
 using FileService.Domain.Entities;
 using FileService.Domain.Enums;
 using MassTransit;
@@ -118,6 +119,7 @@ namespace FileService.Application.Features.Folders.Commands.DeleteFolder
         {
             var tasks = new List<Task>();
 
+            
             // --- Folder Cache Invalidations ---
             
             // Remove the specific folder

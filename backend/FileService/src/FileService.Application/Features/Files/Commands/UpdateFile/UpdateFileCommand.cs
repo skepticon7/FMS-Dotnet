@@ -2,6 +2,7 @@
 using FileService.Domain.Enums;
 using FileService.Application.Common.Exceptions;
 using FileService.Application.Common.Interfaces;
+using FileService.Application.Features.FilesFoldersStats.Queries;
 using Microsoft.EntityFrameworkCore;
 using FileService.Domain.Entities;
 using Microsoft.Extensions.Caching.Distributed; // 1. Add namespace
@@ -63,6 +64,7 @@ namespace FileService.Application.Features.Files.Commands.UpdateFile
 
             await _context.SaveChangesAsync(cancellationToken);
             // ---------------------
+   
 
             // 4️⃣ CACHE INVALIDATION
             // Remove the specific file from cache so the next "GetById" fetches fresh data

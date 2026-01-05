@@ -6,6 +6,7 @@ using MassTransit;
 using Contracts.Users;
 using Contracts.Folders; // Reference the new event namespace
 using FileService.Application.Common.Exceptions;
+using FileService.Application.Features.FilesFoldersStats.Queries;
 
 namespace FileService.Application.Features.Folders.Commands.CreateFolder
 {
@@ -94,6 +95,8 @@ namespace FileService.Application.Features.Folders.Commands.CreateFolder
         // 
         private async Task InvalidateCaches(Folder folder, CancellationToken cancellationToken)
         {
+
+            
             await _cache.RemoveAsync("folders:all", cancellationToken); 
 
             if (!string.IsNullOrEmpty(folder.PatientId))

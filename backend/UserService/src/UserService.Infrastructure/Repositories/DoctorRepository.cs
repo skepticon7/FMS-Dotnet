@@ -18,7 +18,7 @@ public class DoctorRepository(UserDbContext _context) : IDoctorRepository
         return doctor;
     }
 
-    public async Task<Doctor?> GetDoctorByIdAsync(long id , CancellationToken cancellationToken = default)
+    public async Task<Doctor?> GetDoctorByIdAsync(long? id, CancellationToken cancellationToken = default)
     {
         return await _context.Doctors.FirstOrDefaultAsync(d => d.Id == id && !d.IsDeleted  , cancellationToken);
     }
@@ -116,5 +116,10 @@ public class DoctorRepository(UserDbContext _context) : IDoctorRepository
             GenderRatioFemale = femalePercentage
         };
 
+    }
+
+    public async Task<int> GetDoctorsCount(CancellationToken cancellationToken = default)
+    {
+        return await _context.Doctors.AsNoTracking().Where(d => !d.IsDeleted).CountAsync(cancellationToken);
     }
 }

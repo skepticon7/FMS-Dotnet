@@ -6,6 +6,7 @@ using MassTransit;
 using Contracts.Folders; // Assuming FolderUpdated exists here
 using FileService.Application.Common.Exceptions;
 using Contracts.Users;
+using FileService.Application.Features.FilesFoldersStats.Queries;
 
 namespace FileService.Application.Features.Folders.Commands.UpdateFolder
 {
@@ -114,6 +115,9 @@ namespace FileService.Application.Features.Folders.Commands.UpdateFolder
             string? oldPat, string? newPat, 
             CancellationToken ct)
         {
+
+            
+            
             // 1. Remove specific folder
             await _cache.RemoveAsync($"folder:{folderId}", ct);
             

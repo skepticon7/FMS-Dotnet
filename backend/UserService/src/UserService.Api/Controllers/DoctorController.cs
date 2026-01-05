@@ -6,6 +6,7 @@ using UserService.Application.Features.Doctors.Commands.UpdateDoctor;
 using UserService.Application.Features.Doctors.Queries.GetDoctorById;
 using UserService.Application.Features.Doctors.Queries.GetDoctors;
 using UserService.Application.Features.Doctors.Queries.GetDoctorsStats;
+using UserService.Application.Features.Stats.Queries;
 using UserService.Application.Features.Users.Commands;
 
 namespace UserService.Api.Controllers;
@@ -78,5 +79,11 @@ public class DoctorController : ControllerBase
         var deleteDoctor = await _mediator.Send(new DeleteDoctorCommand(id));
         return Ok(deleteDoctor);
     }
-    
+
+    [Authorize(Policy = "DoctorOnly")]
+    [HttpGet("getDoctorDashboardStat/{id}")]
+    public async Task<IActionResult> GetDoctorDashboardStats(long id)
+    {
+        return Ok(await _mediator.Send(new GetDoctorDashboardStat.GetDoctorDashboardStatsByDoctorIdQuery(id)));
+    }
 }

@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using FileService.Application.Common.Interfaces;
 using FileService.Application.Common.Exceptions;
+using FileService.Application.Features.FilesFoldersStats.Queries;
 using FileService.Domain.Entities;
 using FileService.Domain.Enums;
 using Microsoft.Extensions.Caching.Distributed;
@@ -64,6 +65,9 @@ namespace FileService.Application.Features.Files.Commands.DeleteFile
             // 5️⃣ OPTIMIZED CACHE INVALIDATION
             var tasks = new List<Task>();
 
+       
+
+            
             // A. Remove the single file details
             tasks.Add(_cache.RemoveAsync($"file:{request.FileId}", cancellationToken));
 
