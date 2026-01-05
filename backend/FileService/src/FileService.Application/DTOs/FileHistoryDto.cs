@@ -5,6 +5,8 @@ namespace FileService.Application.DTOs
     public class FileHistoryDto
     {
         public Guid Id { get; set; }
+        public Guid FileId { get; set; }
+        public string FileName { get; set; } = string.Empty;
         public FileAction Action { get; set; }
         public string? Notes { get; set; }
         public DateTime Timestamp { get; set; }

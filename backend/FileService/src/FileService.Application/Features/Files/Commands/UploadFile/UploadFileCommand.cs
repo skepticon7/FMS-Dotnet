@@ -123,6 +123,8 @@ namespace FileService.Application.Features.Files.Commands.UploadFile
             // 3. (Optional) Clear the specific folder cache if you have a "GetFolderById" query cached
             await _cache.RemoveAsync($"folder:{request.FolderId}", cancellationToken);
             await _cache.RemoveAsync($"files:folder:{request.FolderId}", cancellationToken);
+            await _cache.RemoveAsync("files:all", cancellationToken);
+            await _cache.RemoveAsync("history:recent", cancellationToken);
             
             return newFileEntry.Id;
         }

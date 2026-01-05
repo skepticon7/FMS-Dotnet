@@ -22,7 +22,9 @@ import {
     ChevronLeft,
     FolderPlus,
     FolderX,
-    Trash2
+    Trash2,
+    User,
+    Stethoscope,
 } from "lucide-react";
 
 // UI Components
@@ -99,12 +101,12 @@ const SearchBarFilter = ({
 
 // --- Folder Card ---
 const FolderCard = ({ folder, onClick, role, onEdit, onDelete }) => {
-    // ... (Keep implementation exactly as before - make sure to remove nested <button>)
     return (
         <div className="group cursor-pointer" onClick={() => onClick(folder)}>
             <Card className="relative overflow-hidden border-slate-200/60 bg-white transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:border-emerald-200/50 rounded-2xl group-hover:-translate-y-0.5">
                 <CardContent className="p-5">
-                    <div className="flex items-start justify-between mb-6">
+                    {/* --- HEADER: Icon, Name, Menu --- */}
+                    <div className="flex items-start justify-between mb-4">
                         <div className="flex items-center gap-4">
                             <div className="size-12 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 transition-colors group-hover:bg-emerald-100">
                                 <Folder className="size-6 fill-emerald-600/10" />
@@ -157,12 +159,36 @@ const FolderCard = ({ folder, onClick, role, onEdit, onDelete }) => {
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>
-                    {/* ... Stats Section ... */}
+
+                    {/* --- NEW SECTION: Patient & Doctor Info --- */}
+                    <div className="flex flex-col gap-2 mb-4 px-1">
+                        {/* 1. Patient Name (Visible to Everyone) */}
+                        {folder.patientName && (
+                            <div className="flex items-center gap-2 text-slate-600">
+                                <User className="w-4 h-4 text-emerald-500" />
+                                <span className="text-sm font-medium truncate">
+                                    {folder.patientName}
+                                </span>
+                            </div>
+                        )}
+
+                        {/* 2. Doctor Name (Visible to Manager Only) */}
+                        {role === 'Manager' && folder.doctorName && (
+                            <div className="flex items-center gap-2 text-slate-600">
+                                <Stethoscope className="w-4 h-4 text-blue-500" />
+                                <span className="text-sm font-medium truncate">
+                                    Dr. {folder.doctorName}
+                                </span>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* --- FOOTER: Stats Section --- */}
                     <div className="grid grid-cols-2 gap-3 pt-4 border-t border-slate-50">
                         <div className="flex flex-col gap-1">
                             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Files</span>
                             <div className="flex items-center gap-1.5">
-                                <FileText className="size-3.5 text-emerald-500" />
+                                <FileText className="size-3.5 text-slate-400" />
                                 <span className="text-sm font-bold text-slate-700">{folder.fileCount || 0}</span>
                             </div>
                         </div>
@@ -181,7 +207,6 @@ const FolderCard = ({ folder, onClick, role, onEdit, onDelete }) => {
         </div>
     )
 }
-
 // --- Main Files Component ---
 const Files = () => {
     const { user } = useAuth();
