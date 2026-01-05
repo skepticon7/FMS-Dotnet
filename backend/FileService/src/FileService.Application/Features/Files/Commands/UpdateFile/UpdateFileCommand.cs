@@ -70,6 +70,7 @@ namespace FileService.Application.Features.Files.Commands.UpdateFile
 
             // Remove the "All Files" list so the next "GetAll" fetches fresh data
             await _cache.RemoveAsync("files:all", cancellationToken);
+            await _cache.RemoveAsync("history:recent", cancellationToken);
 
             return Unit.Value;
         }

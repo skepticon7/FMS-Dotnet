@@ -75,7 +75,8 @@ namespace FileService.Application.Features.Files.Commands.DeleteFile
             
             // D. Clear specific Folder Details metadata
             tasks.Add(_cache.RemoveAsync($"folder:{folderId}", cancellationToken));
-
+            tasks.Add(_cache.RemoveAsync("history:recent", cancellationToken));
+            
             await Task.WhenAll(tasks);
 
             return Unit.Value;

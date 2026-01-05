@@ -679,6 +679,27 @@ export const getFoldersByDoctorId = async (doctorId) => {
         throw e;
     }
 }
+export const getFileHistory = async (page = 1, size = 10) => {
+    try {
+        // Ensure size is an integer and at least 1
+        const limit = size || 10; 
+        
+        const response = await axios.get(
+            `${apiGateway}/file-service/api/file/history`, 
+            { 
+                // Explicitly pass params
+                params: { 
+                    page: page, 
+                    size: limit 
+                }, 
+                ...getAuthConfig() 
+            }
+        );
+        return response;
+    } catch (e) {
+        throw e;
+    }
+}
 
 
 export const getSuperuser = async (superuserId) => {

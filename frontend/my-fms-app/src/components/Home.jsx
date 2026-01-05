@@ -26,10 +26,12 @@ import {
     ChevronDown, ServerCog, HardDriveDownload, HeartPlus,
     Stethoscope,
     ClipboardCheck,
-    FileUp
+    FileUp,
+    History,
 } from "lucide-react"
 import { getInitials } from '../Utils/getInitials'
 import {useAuth} from "../context/AuthContext.jsx";
+import FileHistory from "./FileHistory";
 import {
     Exports,
     Interventions,
@@ -101,6 +103,7 @@ const Home = () => {
             case 'doctors' : return <Doctors/>
             case 'files' : return <Files/>
             case 'usersManagement' : return <UsersManagement/>
+            case 'fileHistory': return <FileHistory/>; // <--- Add this
         }
     }
 
@@ -169,11 +172,11 @@ const Home = () => {
                     <div className='p-3 flex flex-col items-start justify-start gap-2 w-full rounded-lg bg-dark-green'>
                         <p className='text-sm text-white font-semibold'>Quick Actions</p>
                         <button
-                            onClick={() => setModalOpen(true)}
-                            className='flex gap-2 w-full cursor-pointer rounded-md p-2 bg-main-green transition-colors duration-200 hover:bg-main-green/60'>
-                            <FileUp className='w-5 h-5 text-white'/>
-                            <p className='text-sm font-semibold text-white'>New File</p>
-                        </button>
+            onClick={() => setSelectedPage("fileHistory")} // Changes page instead of opening modal
+            className='flex gap-2 w-full cursor-pointer rounded-md p-2 bg-main-green transition-colors duration-200 hover:bg-main-green/60'>
+            <History className='w-5 h-5 text-white'/> {/* Used History Icon */}
+            <p className='text-sm font-semibold text-white'>Recent Activity</p>
+        </button>
                     </div>
                 )}
             </nav>
