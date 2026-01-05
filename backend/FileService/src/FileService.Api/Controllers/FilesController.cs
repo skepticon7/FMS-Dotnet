@@ -8,7 +8,9 @@ using FileService.Application.Features.Files.Queries.GetAllFiles;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using FileService.Application.Features.Files.Queries.GetFileById.GatDashboardFiles;
+using FileService.Application.Features.Files.Queries.GetFileHistory;
 using FileService.Application.Features.Files.Queries.GetFilesByFolderId;
+using FileService.Application.Features.Files.Queries.GetPaginatedFileHistory;
 
 namespace FileService.Api.Controllers
 {
@@ -107,6 +109,26 @@ namespace FileService.Api.Controllers
         }
 
 
+        [HttpGet("history/recent")]
+        [Authorize(Policy = "ManagerOnly")]
+
+        public async Task<IActionResult> GetRecentHistory()
+        {
+            // Just send the query, the Handler does the heavy lifting (Redis + DB)
+            var history = await _mediator.Send(new GetRecentFileHistoryQuery());
+            return Ok(history);
+        }
+        
+        [HttpGet("history")]
+        public async Task<IActionResult> GetHistory(
+            [FromQuery] int page = 1, 
+            [FromQuery] int size = 10) // <--- Ensure this default is 10, not 1
+        {
+            var query = new GetPaginatedFileHistoryQuery(page, size);
+            var result = await _mediator.Send(query);
+            return Ok(result);
+        }
+        
         [HttpGet("getDashboardFiles")]
         [Authorize("ManagerOrDoctor")]
         public async Task<IActionResult> GetDashboardFiles([FromQuery] long? id)
