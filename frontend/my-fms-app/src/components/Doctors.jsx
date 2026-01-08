@@ -573,7 +573,7 @@ const Doctor = () => {
                   </div>
               )}
 
-              {filteredDoctors.length === 0 && (
+              {(totalCount !== 0 && filteredDoctors.length === 0) && (
                   <div className='flex flex-col items-center justify-center w-full py-20'>
                     <UserX className="w-16 h-16 text-red-600 mb-4"/>
                     <h2 className="text-2xl font-bold text-red-700 mb-2">No Doctors</h2>

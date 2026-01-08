@@ -65,7 +65,8 @@ namespace FileService.Application.Features.Folders.Queries
                     Type = f.Type,
                     DoctorId = f.DoctorId,
                     PatientId = f.PatientId,
-                    CreatedAt = f.CreatedAt
+                    CreatedAt = f.CreatedAt,
+                    FileCount = f.Files.Count(fe => fe.DeletedAt == null)
                 })
                 .ToListAsync(cancellationToken);
             if (folders.Count == 0)

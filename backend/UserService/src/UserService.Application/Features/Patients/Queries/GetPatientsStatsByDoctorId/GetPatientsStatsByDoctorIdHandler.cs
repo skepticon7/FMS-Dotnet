@@ -14,8 +14,6 @@ public class GetPatientsStatsByDoctorIdHandler(
     public async Task<PatientStatsDTO> Handle(GetPatientsStatsByDoctorIdQuery request, CancellationToken cancellationToken)
     {
         var patientsIds = await _fileServiceClient.GetPatientIdsByDoctorAsync(request.DoctorId);
-
-        Console.WriteLine("here in handler , patientIds : " + patientsIds.Count);
         
         return await _patientRepository.GetPatientsStatsForDoctor(patientsIds, cancellationToken);
     }

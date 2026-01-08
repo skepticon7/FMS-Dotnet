@@ -13,7 +13,8 @@ public class GetDoctorDashboardStat
 
     public class GetDoctorDashboardStatsByDoctorIdHandler
         (
-            IFileServiceClient fileServiceClient
+            IFileServiceClient fileServiceClient,
+            IPatientRepository patientRepository
         )
         : IRequestHandler<GetDoctorDashboardStatsByDoctorIdQuery, DoctorDashboardStatDTO>
     {
@@ -21,9 +22,11 @@ public class GetDoctorDashboardStat
         {
             var patientIds = await fileServiceClient.GetPatientIdsByDoctorAsync(request.DoctorId);
 
+            var patientsCount = await patientRepository.GetPatientsCount(patientIds , cancellationToken);
+            
             return new DoctorDashboardStatDTO
             {
-                ActivePatients = patientIds.Count
+                ActivePatients = patientsCount
             };
         }
     }

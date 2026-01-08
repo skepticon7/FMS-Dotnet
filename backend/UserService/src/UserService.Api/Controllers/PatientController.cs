@@ -42,7 +42,6 @@ public class PatientController(IMediator _mediator) : ControllerBase
         [FromQuery] List<string> genders = null
     )
     {
-        Console.Write("here in get patients");
         return Ok(await _mediator.Send(
             new GetPatientsQuery
             {
@@ -63,7 +62,6 @@ public class PatientController(IMediator _mediator) : ControllerBase
         [FromQuery] List<string> genders = null
     )
     {
-        Console.WriteLine("hello from get patients by doctor");
         return Ok(await _mediator.Send(
             new GetPatientsByDoctorIdQuery
             {

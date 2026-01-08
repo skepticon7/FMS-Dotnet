@@ -20,4 +20,6 @@ public interface IPatientRepository
     
     Task<PatientStatsDTO> GetPatientsStatsForDoctor(List<long> patientIds , CancellationToken cancellationToken = default);
 
+    Task<int> GetPatientsCount(List<long>? patientIds , CancellationToken cancellationToken = default);
+
 }

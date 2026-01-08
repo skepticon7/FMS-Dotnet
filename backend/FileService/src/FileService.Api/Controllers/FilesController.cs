@@ -122,7 +122,7 @@ namespace FileService.Api.Controllers
         [HttpGet("history")]
         public async Task<IActionResult> GetHistory(
             [FromQuery] int page = 1, 
-            [FromQuery] int size = 10) // <--- Ensure this default is 10, not 1
+            [FromQuery] int size = 10) 
         {
             var query = new GetPaginatedFileHistoryQuery(page, size);
             var result = await _mediator.Send(query);
@@ -133,7 +133,6 @@ namespace FileService.Api.Controllers
         [Authorize("ManagerOrDoctor")]
         public async Task<IActionResult> GetDashboardFiles([FromQuery] long? id)
         {
-            Console.WriteLine("here : " + id);
             return Ok(await _mediator.Send(new GetDashboardFiles.GetDashboardFilesQuery(id)));
         }
         

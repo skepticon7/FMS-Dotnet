@@ -92,6 +92,7 @@ public class PatientRepository(UserDbContext _context) : IPatientRepository
         var patients = _context.Patients.AsNoTracking()
             .Where(p => !p.IsDeleted &&
                         patientIds.Contains(p.Id));
+        Console.Write("patient is : " + patients.Count());
         
         var totalPatients = await patients.CountAsync(cancellationToken);
 
@@ -203,8 +204,8 @@ public class PatientRepository(UserDbContext _context) : IPatientRepository
         };
     }
 
-    public async Task<int> GetPatientsCount(CancellationToken cancellationToken = default)
+    public async Task<int> GetPatientsCount(List<long>? patientsIds ,CancellationToken cancellationToken = default)
     {
-        return await _context.Patients.AsNoTracking().Where(p => !p.IsDeleted).CountAsync(cancellationToken);
+        return await _context.Patients.AsNoTracking().Where(p => !p.IsDeleted && patientsIds != null && patientsIds.Contains(p.Id)).CountAsync(cancellationToken);
     }
 }
